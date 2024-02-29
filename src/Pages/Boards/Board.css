@@ -1,0 +1,92 @@
+.tab {
+  background-color: #f0f0f0;
+  color: #333;
+  padding: 10px 20px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+.tab-selected {
+  background-color: #1890ff;
+  color: #fff;
+  padding: 10px 20px;
+  border: 1px solid #1890ff;
+  border-radius: 4px;
+}
+
+form {
+  display: flex;
+}
+
+/* input[type="text"] {
+  border-radius: 3px;
+  outline: none;
+  margin: 0px 0px 0px 16px;
+  border: 1px solid var(--accent-color);
+}
+input[type="text"]:focus {
+  border-radius: 3px;
+  outline: none;
+  margin: 0px 0px 0px 16px;
+  border: 1px solid var(--accent-color);
+} */
+.ok {
+  background-color: green;
+  border-radius: 5px;
+}
+
+.close {
+  background-color: red;
+  border-radius: 5px;
+}
+
+.columns {
+  display: flex;
+  gap: 5px;
+}
+
+.slct-tab {
+  background-color: var(--primary-color);
+  border-radius: 0px 5px 5px 5px;
+  min-height: 630px;
+  overflow: auto;
+}
+
+
+.grid-container {
+  margin: 10px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); /* Гибкое количество столбцов */
+  gap: 10px; /* Расстояние между карточками */
+}
+
+.card {
+  background-color: var(--background-color);
+  border: 1px solid var(--border-color);
+  border-radius: 5px;
+  padding: 10px;
+}
+
+.card h3 {
+  font-size: 1.2em;
+  color: #333;
+}
+
+.card p {
+  color: #666;
+}
+
+.card button {
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  padding: 5px 10px;
+  cursor: pointer;
+  border-radius: 3px;
+}
+
+.card button:hover {
+  background-color: #0056b3;
+}
+
+

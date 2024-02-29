@@ -1,0 +1,35 @@
+.alert {
+  padding: 12px 20px;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  margin-bottom: 16px;
+  opacity: 0;
+  transition: opacity 0.3s ease-in-out;
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: fit-content;
+  z-index: 9999;
+  word-wrap: break-word;
+}
+.alert.open {
+  opacity: 1;
+}
+.alert-error {
+  color: #721c24;
+  background-color: #f8d7da;
+  border-color: #f5c6cb;
+}
+
+.alert-warning {
+  color: #856404;
+  background-color: #fff3cd;
+  border-color: #ffeeba;
+}
+
+.alert-success {
+  color: #155724;
+  background-color: #d4edda;
+  border-color: #c3e6cb;
+}

@@ -1,0 +1,11 @@
+.profile-btn {
+  height: 100%;
+  width: 125px;
+  padding: 10px 0;
+  background-color: #fff;
+  border: none;
+  cursor: pointer;
+}
+.profile-btn:hover {
+  background-color: #f1f1f1;
+}

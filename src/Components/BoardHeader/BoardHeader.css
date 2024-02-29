@@ -1,0 +1,10 @@
+.func-btn {
+  display: flex;
+  align-items: stretch;
+  gap: 10px;
+  overflow-y: auto;
+}
+.func-btn button {
+  background-color: var(--primary-color);
+  gap: 2px;
+}
