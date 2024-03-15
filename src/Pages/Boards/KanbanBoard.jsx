@@ -65,6 +65,7 @@ const KanbanBoard = ({ columns, updateColumns, boardId, userId, users, prioritie
   const handleOpenTaskModal = (stateId) => {
     const column = columns.find((column) => column.id === stateId);
     setSelectedColumnId(column.id);
+    console.log(stateId, column.id);
     setOpenAddTaskModal(true);
   };
   const [openAddTaskModal, setOpenAddTaskModal] = useState(false);
@@ -87,12 +88,10 @@ const KanbanBoard = ({ columns, updateColumns, boardId, userId, users, prioritie
     });
   };
   const handleAddTask = async (values) => {
-    console.log(values);
     setOpenAddTaskModal(false);
 
     try {
       const addedTask = await addTask(values, userId, boardId, selectedColumnId);
-      console.log(addedTask);
 
       queryClient.setQueryData(["columns", userId, boardId], (prevColumns) => {
         return prevColumns.map((column) => {
@@ -106,13 +105,11 @@ const KanbanBoard = ({ columns, updateColumns, boardId, userId, users, prioritie
           return column;
         });
       });
-
-      console.log(addedTask, queryClient.getQueryData(["columns", userId, boardId]));
     } catch (error) {
       console.error(error);
     }
   };
-  console.log(columns);
+
   return (
     <>
       <DragDropContext onDragEnd={onDragEnd}>
@@ -144,13 +141,15 @@ const KanbanBoard = ({ columns, updateColumns, boardId, userId, users, prioritie
                               <Draggable key={task.id} draggableId={`${task.id}`} index={index}>
                                 {(provided, snapshot) => (
                                   <div ref={provided.innerRef} {...provided.draggableProps} {...provided.dragHandleProps}>
-                                    <TaskCard
-                                      task={task}
-                                      isDragging={snapshot.isDragging}
-                                      deleteTask={handleDeleteTask}
-                                      userId={userId}
-                                      boardId={boardId}
-                                    />
+                                    {!task.isArchived && (
+                                      <TaskCard
+                                        task={task}
+                                        isDragging={snapshot.isDragging}
+                                        deleteTask={handleDeleteTask}
+                                        userId={userId}
+                                        boardId={boardId}
+                                      />
+                                    )}
                                   </div>
                                 )}
                               </Draggable>

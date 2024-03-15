@@ -17,7 +17,7 @@ const Boards = () => {
   const [showOnlyFavorites, setShowOnlyFavorites] = useState(false);
   const { data: user, isLoading: isUserLoading } = useQuery("user", fetchUser);
   const { data: boards, isLoading: isBoardsLoading } = useQuery("boards", () => fetchBoards(user.id), { enabled: !!user });
-  console.log(boards);
+
   const AddBoardMutation = useMutation((data) => AddBoard(data, user.id), {
     onSuccess: () => queryClient.invalidateQueries(["boards"]),
   });
@@ -32,7 +32,7 @@ const Boards = () => {
 
     const updatedFavorite = !boards.find((board) => board.id === boardId).favorite;
 
-    console.log(updatedFavorite);
+
 
     await updateBoard(user.id, boardId, { favorite: updatedFavorite });
 

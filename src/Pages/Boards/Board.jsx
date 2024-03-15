@@ -1,8 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Avatar, Badge, Button, ColorPicker, Divider, Flex, Form, Input, InputNumber, Layout, Menu, Modal, Space, Spin, Tag, Typography } from "antd";
-import { ArrowLeftOutlined, DashboardOutlined, LaptopOutlined, NotificationFilled, UserOutlined } from "@ant-design/icons";
-import { Header } from "antd/es/layout/layout";
-import Search from "antd/es/input/Search";
+import { Button, ColorPicker, Divider, Form, Input, Layout, Menu, Modal, Space, Spin, Tag } from "antd";
 import { useQuery } from "react-query";
 const { Sider, Content } = Layout;
 import { useMutation, useQueryClient } from "react-query";
@@ -18,20 +15,16 @@ import SocketApi, {
   fetchUsersByBoard,
   getPriorities,
   updateBoardWithColumns,
-  updateTask,
 } from "../../api";
 import "./Boards.css";
-import Title from "antd/es/typography/Title";
-import KanbanBoard from "./KanbanBoard";
 import { useParams } from "react-router-dom";
-import ProfileButton from "../../Components/ProfileButton";
-import { AccountTreeOutlined, ArrowBack, Dashboard, ViewKanban, ViewKanbanOutlined } from "@mui/icons-material";
-import BoardSettings from "./BoardSettings";
+import { AccountTreeOutlined, Dashboard, ViewKanbanOutlined } from "@mui/icons-material";
 import Archive from "./Archive";
 import GanttChart from "./GanttChart";
 import KanbanLayout from "./KanbanLayout";
 import Navbar from "../../Components/BoardHeader/Navbar/Navbar";
-import chroma from "chroma-js";
+import Users from "./Users";
+import Roles from "./Roles";
 
 const Board = () => {
   const queryClient = useQueryClient();
@@ -54,7 +47,7 @@ const Board = () => {
   const createPriorityForBoard = async (values) => {
     try {
       values.color = hexString;
-      console.log(hexString, values.color);
+
       CreatePriorityMutation.mutate(values);
       setOpenAddPriorityModal(false);
     } catch (error) {
@@ -62,6 +55,7 @@ const Board = () => {
     }
   };
   const { data: columns, isLoading, error } = useQuery(["columns", userId, board?.id], () => fetchStates(userId, board?.id));
+
   const [form] = Form.useForm();
 
   useEffect(() => {
@@ -77,7 +71,8 @@ const Board = () => {
     };
   }, []);
   const updateColumns = (newColumns) => {
-    queryClient.setQueryData(["columns", userId, board?.id], newColumns);
+    queryClient.setQueryData(["columns", userId, board?.id], Object.values(newColumns));
+
     updateBoardWithColumns(userId, board?.id, newColumns); // Обновляем данные через API
   };
 
@@ -98,7 +93,6 @@ const Board = () => {
   };
 
   const handleAddState = async (values) => {
-    console.log(values);
     try {
       setOpenAddSectionModal(false);
       const newColumn = await addState(values, userId, board.id);
@@ -134,7 +128,11 @@ const Board = () => {
               </Menu.Item>
               <Divider style={{ margin: "8px 0px 8px 0px" }}></Divider>
               <Menu.Item style={{ padding: "0px 16px 0px 16px" }} key="4" icon={<Dashboard style={{ fontSize: "18px" }} />}>
-                Управление доской
+                Пользователи
+              </Menu.Item>
+
+              <Menu.Item style={{ padding: "0px 16px 0px 16px" }} key="5" icon={<Dashboard style={{ fontSize: "18px" }} />}>
+                Роли
               </Menu.Item>
             </Menu>
           </Sider>
@@ -158,8 +156,9 @@ const Board = () => {
                   />
                 )}
                 {selectedMenuItem === "2" && <GanttChart />}
-                {selectedMenuItem === "3" && <Archive />}
-                {selectedMenuItem === "4" && <BoardSettings userId={userId} boardId={boardId} />}
+                {selectedMenuItem === "3" && <Archive boardId={boardId} />}
+                {selectedMenuItem === "4" && <Users userId={userId} boardId={boardId} usersBoard={usersBoard} />}
+                {selectedMenuItem === "5" && <Roles userId={userId} boardId={boardId} usersBoard={usersBoard} />}
               </>
             )}
           </>

@@ -12,7 +12,7 @@ const Comments = ({ userId, boardId, stateId, taskId }) => {
   });
 
   if (!isLoading) {
-    console.log(comments);
+  
   }
   useEffect(() => {
     SocketApi.createConnection();

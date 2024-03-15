@@ -29,7 +29,7 @@ export async function registration(data) {
 }
 export const fetchUsersByBoard = async (boardId) => {
   const response = await axios.get(`${BASE_URL}/users/byBoardId/${boardId}`);
-  console.log(response.data);
+
   return response.data;
 };
 export async function addUserInBoard(userId, boardId) {
@@ -37,7 +37,7 @@ export async function addUserInBoard(userId, boardId) {
 }
 export async function AddBoard(data, userId) {
   const response = await axios.post(`${BASE_URL}/users/${userId}/boards`, data);
-  console.log(response.data);
+
   return response.data;
 }
 
@@ -48,17 +48,17 @@ export async function addState(data, userId, boardId) {
 
 export async function addTask(data, userId, boardId, stateId) {
   const response = await axios.post(`${BASE_URL}/users/${userId}/boards/${boardId}/states/${stateId}/tasks`, data);
-  console.log(response.data);
+
   return response.data;
 }
 export async function commentTask(data, userId, boardId, stateId, taskId) {
   const response = await axios.post(`${BASE_URL}/users/${userId}/boards/${boardId}/states/${stateId}/tasks/${taskId}/comment`, data);
-  console.log(response.data);
+
   return response.data;
 }
 export async function getCommentsTask(userId, boardId, stateId, taskId) {
   const response = await axios.get(`${BASE_URL}/users/${userId}/boards/${boardId}/states/${stateId}/tasks/${taskId}/comment`);
-  console.log(response.data);
+
   return response.data;
 }
 export async function deleteTask(userId, boardId, stateId, taskId) {
@@ -89,9 +89,8 @@ export async function updateBoard(userId, boardId, updatedData) {
   await axios.put(`${BASE_URL}/users/${userId}/boards/${boardId}`, updatedData);
 }
 export const fetchBoards = async (userId) => {
-  console.log(userId);
   const response = await axios.get(`${BASE_URL}/users/${userId}/boards`);
-  // console.log(response.data);
+
   return response.data;
 };
 
@@ -102,7 +101,7 @@ export const fetchBoardById = async (userId, boardId) => {
 
 export const fetchStates = async (userId, boardId) => {
   const response = await axios.get(`${BASE_URL}/users/${userId}/boards/${boardId}/states`);
-  console.log(response.data);
+
   return response.data.sort((a, b) => a.id - b.id);
 };
 export const getIsArchivedTasks = async (userId, boardId) => {
@@ -152,6 +151,7 @@ export const getRole = async (boardId, roleId) => {
   return response.data;
 };
 export async function createRole(data, boardId) {
+  console.log(data);
   await axios.post(`${BASE_URL}/boards/${boardId}/roles`, data);
 }
 export async function updateRole(userId, boardId, updatedData) {
@@ -168,7 +168,6 @@ export const getTask = async (userId, boardId, stateId, taskId) => {
   return response.data;
 };
 export const getPriorities = async (boardId) => {
-  console.log(boardId);
   const response = await axios.get(`${BASE_URL}/boards/${boardId}/priorities`);
 
   return response.data;
@@ -178,19 +177,10 @@ export const getPriority = async (boardId, priorityId) => {
   return response.data;
 };
 export async function createPriority(data, boardId) {
-  console.log(data, boardId);
   await axios.post(`${BASE_URL}/boards/${boardId}/priorities`, data);
 }
 
 export const moveTaskToState = async (userId, boardId, stateId, taskId, newColumnId, newPosition) => {
-  console.log(userId, boardId, stateId, taskId, newColumnId, newPosition);
-  console.log(
-    (`${BASE_URL}/users/${userId}/boards/${boardId}/states/${stateId}/tasks/${taskId}/move`,
-    {
-      newColumnId,
-      newPosition,
-    })
-  );
   const response = await axios.put(`${BASE_URL}/users/${userId}/boards/${boardId}/states/${stateId}/tasks/${taskId}/move`, {
     newColumnId,
     newPosition,
@@ -204,7 +194,6 @@ export const updateBoardWithColumns = async (userId, boardId, newColumns) => {
   return response.data;
 };
 export const updateStateTitle = async (userId, boardId, stateId, newTitle) => {
-  console.log(userId, boardId, stateId, newTitle);
   const response = await axios.put(`${BASE_URL}/users/${userId}/boards/${boardId}/states/${stateId}`, { title: newTitle });
   return response.data;
 };

@@ -117,7 +117,7 @@ const BoardHeader = ({ board, isOwner, userId, priorities, currentRole, boardId,
 
   const handleSaveClick = () => {
     if (newTitle) {
-      console.log(newTitle);
+
       handleChangeBoardTitle(board.id, newTitle);
       updateBoardMutation.mutate(newTitle);
       setIsEditing(false);
@@ -226,7 +226,7 @@ const BoardHeader = ({ board, isOwner, userId, priorities, currentRole, boardId,
       fields.canAccessArchive = Boolean(fields.canAccessArchive);
 
       handleCloseRolesModal();
-      console.log(fields);
+
       CreateRoleMutation.mutate(fields);
     } catch (error) {
       console.error(error);
@@ -374,7 +374,7 @@ const BoardHeader = ({ board, isOwner, userId, priorities, currentRole, boardId,
         ) : (
           <>
             <h1>{board.title}</h1>
-            {/* {console.log(currentRole.canEditBoardInfo)} */}
+        
             {currentRole.canEditBoardInfo || (isOwner && <EditIcon onClick={handleEditClick} />)}
             {isOwner ? (
               <Dropdown>

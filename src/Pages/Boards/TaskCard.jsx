@@ -1,13 +1,15 @@
 import { CalendarOutlined, CheckCircleOutlined, ExclamationCircleOutlined, UserOutlined } from "@ant-design/icons";
-import { DeleteOutline, DeleteOutlineOutlined } from "@mui/icons-material";
+import { Archive, ArchiveOutlined, Delete, DeleteOutline, DeleteOutlineOutlined } from "@mui/icons-material";
 import { Avatar, Badge, Button, Card, Checkbox, Descriptions, Divider, Drawer, Flex, List, Modal, Tag } from "antd";
 import moment from "moment";
 import React, { useState } from "react";
 import Comments from "../../Components/Comments";
+import { taskChangeArchivingStatus, updateTaskIsCompleted } from "../../api";
+import { useQueryClient } from "react-query";
 
 const TaskCard = ({ task, isDragging, deleteTask, userId, boardId }) => {
   const [open, setOpen] = useState(false);
-
+  const queryClient = useQueryClient();
   const showDrawer = () => {
     setOpen(true);
   };
@@ -24,26 +26,55 @@ const TaskCard = ({ task, isDragging, deleteTask, userId, boardId }) => {
       onOk: () => deleteTask(task?.stateId, task?.id),
     });
   };
+  const handleArchiveTask = async (userId, boardId, columnId, taskId) => {
+    await taskChangeArchivingStatus(userId, boardId, columnId, taskId, true);
+    console.log();
+    queryClient.invalidateQueries(["columns"]);
+  };
+  const handleTaskCompletion = () => {
+    const updatedIsCompleted = !task.isCompleted;
+    updateTaskIsCompleted(userId, boardId, task?.stateId, task.id, { isCompleted: updatedIsCompleted }).then(() => {
+      queryClient.invalidateQueries(["columns"]);
+    });
+  };
+  console.log(task);
   return (
     <>
       {task?.priority ? ( // Проверяем наличие приоритета у задачи
-        <Badge.Ribbon text={`${task?.priority?.name}`} color={`${task?.priority?.color}`}>
+        <Badge.Ribbon
+          text={`${task?.priority?.name}`}
+          color={`${task?.priority?.color}`}
+          style={{
+            opacity: task?.isCompleted ? 0.6 : 1, // Уменьшаем немного прозрачность для дизейбленной карточки
+          }}>
           <Card
-            title={task?.title}
+            title={
+              <>
+                <input
+                  className="checkbox"
+                  type="checkbox"
+                  onChange={handleTaskCompletion}
+                  checked={task?.isCompleted}
+                  onClick={(e) => e.stopPropagation()}></input>
+                {task?.title}
+              </>
+            }
             style={{
               width: 300,
-              cursor: "pointer",
               boxShadow: isDragging ? "0 0 10px rgba(0,0,0,0.2)" : "none",
               transition: "background-color 0.2s, box-shadow 0.2s",
+              backgroundColor: !task?.isCompleted ? "#ffffff" : "#f3f3f3", // Меняем цвет фона, чтобы выделить что задача завершена
+              opacity: task?.isCompleted ? 0.6 : 1, // Уменьшаем немного прозрачность для дизейбленной карточки
             }}
-            onClick={showDrawer}>
+            onClick={showDrawer} // Добавляем проверку, чтобы не открывать задачу при завершенной задаче
+          >
             <div>
               {task?.startDate && <p>Начало: {moment(task?.startDate).locale("ru").format("DD MM YYYY, HH:mm:ss")}</p>}
               {task?.endDate && <p>Конец: {moment(task?.endDate).locale("ru").format("DD MM YYYY, HH:mm:ss")}</p>}
             </div>
             {task?.users && task?.users.length > 0 && (
               <>
-                <p>Ответственные:</p>
+                <Divider>Ответственные</Divider>
                 <div style={{ display: "flex" }}>
                   {task.users.map((user, index) => (
                     <Avatar key={user.id} style={{ backgroundColor: `${stringToColor(user.firstName)}` }}>
@@ -57,12 +88,23 @@ const TaskCard = ({ task, isDragging, deleteTask, userId, boardId }) => {
         </Badge.Ribbon>
       ) : (
         <Card
-          title={task?.title}
+          title={
+            <>
+              <input
+                className="checkbox"
+                type="checkbox"
+                onChange={handleTaskCompletion}
+                checked={task?.isCompleted}
+                onClick={(e) => e.stopPropagation()}></input>
+              {task?.title}
+            </>
+          }
           style={{
             width: 300,
-            cursor: "pointer",
             boxShadow: isDragging ? "0 0 10px rgba(0,0,0,0.2)" : "none",
             transition: "background-color 0.2s, box-shadow 0.2s",
+            backgroundColor: !task?.isCompleted ? "#ffffff" : "#f3f3f3", // Меняем цвет фона, чтобы выделить что задача завершена
+            opacity: task?.isCompleted ? 0.6 : 1, // Уменьшаем немного прозрачность для дизейбленной карточки
           }}
           onClick={showDrawer}>
           <div>
@@ -72,7 +114,7 @@ const TaskCard = ({ task, isDragging, deleteTask, userId, boardId }) => {
 
           {task?.users && task?.users.length > 0 && (
             <>
-              <p>Ответственные:</p>
+              <Divider orientation="left">Ответственные</Divider>
               <div style={{ display: "flex" }}>
                 {task.users.map((user, index) => (
                   <Avatar key={user.id} style={{ backgroundColor: `${stringToColor(user.firstName)}` }}>
@@ -88,7 +130,15 @@ const TaskCard = ({ task, isDragging, deleteTask, userId, boardId }) => {
         title={
           <Flex style={{ justifyContent: "space-between" }}>
             <span>{task?.title}</span>
-            <DeleteOutline style={{ color: "red", cursor: "pointer" }} onClick={showDeleteConfirm}></DeleteOutline>
+            <div>
+              <ArchiveOutlined
+                color="primary"
+                style={{ cursor: "pointer" }}
+                onClick={() => {
+                  handleArchiveTask(userId, boardId, task.stateId, task.id);
+                }}></ArchiveOutlined>
+              <DeleteOutline color="error" style={{ cursor: "pointer" }} onClick={showDeleteConfirm}></DeleteOutline>
+            </div>
           </Flex>
         }
         placement="right"
@@ -96,7 +146,7 @@ const TaskCard = ({ task, isDragging, deleteTask, userId, boardId }) => {
         onClose={onClose}
         open={open}
         width={640}>
-        <p>Описание: {task.description}</p>
+        <p>{task.description}</p>
         <Divider orientation="left">
           <CalendarOutlined />
           <> </>Срок выполнения
@@ -114,7 +164,6 @@ const TaskCard = ({ task, isDragging, deleteTask, userId, boardId }) => {
         </Divider>
         {task?.users && task?.users.length > 0 && (
           <>
-            <p>Ответственные:</p>
             {task?.users?.map((user) => (
               <Avatar key={user.id} style={{ backgroundColor: `${stringToColor(user.firstName)}` }}>
                 {user.firstName}
