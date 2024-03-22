@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Button, ColorPicker, Divider, Form, Input, Layout, Menu, Modal, Space, Spin, Tag } from "antd";
 import { useQuery } from "react-query";
-const { Sider, Content } = Layout;
+const { Sider } = Layout;
 import { useMutation, useQueryClient } from "react-query";
 import ArchiveIcon from "@mui/icons-material/Archive";
 import SocketApi, {
@@ -16,15 +16,16 @@ import SocketApi, {
   getPriorities,
   updateBoardWithColumns,
 } from "../../api";
-import "./Boards.css";
-import { useParams } from "react-router-dom";
+// import "../Boards/Boards.css";
+import { BrowserRouter, Link, Route, Router, Routes, useParams } from "react-router-dom";
 import { AccountTreeOutlined, Dashboard, ViewKanbanOutlined } from "@mui/icons-material";
-import Archive from "./Archive";
-import GanttChart from "./GanttChart";
-import KanbanLayout from "./KanbanLayout";
+import Archive from "../Archive/Archive";
+import GanttChart from "../GanttChart/GanttChart";
+import KanbanLayout from "./Components/KanbanLayout";
 import Navbar from "../../Components/BoardHeader/Navbar/Navbar";
-import Users from "./Users";
-import Roles from "./Roles";
+import Users from "../BoardUsers/Users";
+import Roles from "../BoardRoles/Roles";
+import { Content } from "antd/es/layout/layout";
 
 const Board = () => {
   const queryClient = useQueryClient();
@@ -38,9 +39,6 @@ const Board = () => {
     keepPreviousData: true,
   });
   const { data: board, isLoading: isBoardLoading } = useQuery("boards", () => fetchBoardById(userId, boardId), { enabled: !!userId });
-  const AddBoardMutation = useMutation((data) => AddBoard(data, user.id), {
-    onSuccess: () => queryClient.invalidateQueries(["boards"]),
-  });
   const CreatePriorityMutation = useMutation((data) => createPriority(data, board.id), {
     onSuccess: () => queryClient.invalidateQueries(["priorities"]),
   });
@@ -54,7 +52,7 @@ const Board = () => {
       console.error(error);
     }
   };
-  const { data: columns, isLoading, error } = useQuery(["columns", userId, board?.id], () => fetchStates(userId, board?.id));
+  const { data: columns } = useQuery(["columns", userId, board?.id], () => fetchStates(userId, board?.id));
 
   const [form] = Form.useForm();
 
@@ -76,7 +74,7 @@ const Board = () => {
     updateBoardWithColumns(userId, board?.id, newColumns); // Обновляем данные через API
   };
 
-  const { data: usersBoard, isLoadingUsers, errorUsers } = useQuery(["users", board?.id], () => fetchUsersByBoard(board?.id));
+  const { data: usersBoard } = useQuery(["users", board?.id], () => fetchUsersByBoard(board?.id));
   const { data: priorities } = useQuery(["priorities", board?.id], () => getPriorities(board?.id));
 
   const [openAddSectionModal, setOpenAddSectionModal] = useState(false);
@@ -104,16 +102,64 @@ const Board = () => {
 
   const [openTaskModal, setOpenTaskModal] = useState(false);
 
-  const DeleteStateMutation = useMutation((stateId) => deleteState(userId, board.id, stateId), {
-    onSuccess: () => queryClient.invalidateQueries(["columns"]),
-  });
-
   return (
     <>
       <Layout style={{ height: "100vh" }}>
         <Navbar backArrow={true} />
 
         <Layout>
+          <Sider breakpoint="lg" collapsible collapsed={collapsed} onCollapse={onCollapse} theme="light">
+            <div className="logo" />
+            <Menu theme="light" mode="inline">
+              <Menu.Item style={{ padding: "0px 16px 0px 16px" }} icon={<ViewKanbanOutlined style={{ fontSize: "18px" }} />}>
+                <Link to={`/boards/${boardId}/`}> Канбан доска</Link>
+              </Menu.Item>
+              <Menu.Item style={{ padding: "0px 16px 0px 16px" }} icon={<AccountTreeOutlined style={{ fontSize: "18px" }} />}>
+                <Link to={`/boards/${boardId}/gant`}>Гант</Link>
+              </Menu.Item>
+              <Menu.Item style={{ padding: "0px 16px 0px 16px" }} icon={<ArchiveIcon style={{ fontSize: "18px" }} />}>
+                <Link to={`/boards/${boardId}/archive`}>Архив</Link>
+              </Menu.Item>
+              <Divider style={{ margin: "8px 0px 8px 0px" }}></Divider>
+              <Menu.Item style={{ padding: "0px 16px 0px 16px" }} icon={<Dashboard style={{ fontSize: "18px" }} />}>
+                <Link to={`/boards/${boardId}/users`}>Пользователи</Link>
+              </Menu.Item>
+              <Menu.Item style={{ padding: "0px 16px 0px 16px" }} icon={<Dashboard style={{ fontSize: "18px" }} />}>
+                <Link to={`/boards/${boardId}/roles`}>Роли</Link>
+              </Menu.Item>
+            </Menu>
+          </Sider>
+          <Layout>
+            <Content>
+              <Routes>
+                <Route
+                  path="/"
+                  index
+                  element={
+                    <KanbanLayout
+                      board={board}
+                      usersBoard={usersBoard}
+                      columns={columns}
+                      updateColumns={updateColumns}
+                      userId={userId}
+                      priorities={priorities}
+                      openAddSectionModal={openAddSectionModal}
+                      setOpenAddSectionModal={setOpenAddSectionModal}
+                      openAddPriorityModal={openAddPriorityModal}
+                      setOpenAddPriorityModal={setOpenAddPriorityModal}
+                    />
+                  }
+                />
+                <Route path="/gant" element={<GanttChart data={columns} />} />
+                <Route path="/archive" element={<Archive boardId={boardId} />} />
+                <Route path="/users" element={<Users userId={userId} boardId={boardId} />} />
+                <Route path="/roles" element={<Roles userId={userId} boardId={boardId} />} />
+              </Routes>
+            </Content>
+          </Layout>
+        </Layout>
+
+        {/* <Layout>
           <Sider breakpoint="lg" collapsible collapsed={collapsed} onCollapse={onCollapse} theme="light">
             <div className="logo" />
             <Menu theme="light" defaultSelectedKeys={["1"]} mode="inline" selectedKeys={[selectedMenuItem]} onClick={handleMenuClick}>
@@ -162,7 +208,7 @@ const Board = () => {
               </>
             )}
           </>
-        </Layout>
+        </Layout> */}
       </Layout>
 
       <Modal footer={null} title="Новый столбец" open={openAddSectionModal} onCancel={() => setOpenAddSectionModal(false)}>
@@ -225,20 +271,3 @@ const Board = () => {
 };
 
 export default Board;
-function stringToColor(string) {
-  let hash = 0;
-  let i;
-
-  for (i = 0; i < string.length; i += 1) {
-    hash = string.charCodeAt(i) + ((hash << 5) - hash);
-  }
-
-  let color = "#";
-
-  for (i = 0; i < 3; i += 1) {
-    const value = (hash >> (i * 8)) & 0xff;
-    color += `00${value.toString(16)}`.slice(-2);
-  }
-
-  return color;
-}

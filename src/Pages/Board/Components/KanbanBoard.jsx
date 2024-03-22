@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Card, Row, Col, Typography, Modal, Form, Input, DatePicker, Checkbox, Select, Button, Flex, Badge } from "antd";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
-import { addTask, deleteTask, updateBoardWithColumns, updateStateTitle } from "../../api";
+import { addTask, deleteTask, updateBoardWithColumns, updateStateTitle } from "../../../api";
 import { PlusOutlined, PlusSquareOutlined } from "@ant-design/icons";
 import "./KanbanBoard.css";
 import TaskCard from "./TaskCard";

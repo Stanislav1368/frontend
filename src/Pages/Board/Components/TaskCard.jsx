@@ -3,8 +3,8 @@ import { Archive, ArchiveOutlined, Delete, DeleteOutline, DeleteOutlineOutlined 
 import { Avatar, Badge, Button, Card, Checkbox, Descriptions, Divider, Drawer, Flex, List, Modal, Tag } from "antd";
 import moment from "moment";
 import React, { useState } from "react";
-import Comments from "../../Components/Comments";
-import { taskChangeArchivingStatus, updateTaskIsCompleted } from "../../api";
+import Comments from "../../../Components/Comments";
+import { taskChangeArchivingStatus, updateTaskIsCompleted } from "../../../api";
 import { useQueryClient } from "react-query";
 
 const TaskCard = ({ task, isDragging, deleteTask, userId, boardId }) => {
