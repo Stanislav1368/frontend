@@ -1,15 +1,16 @@
 import { DownOutlined, ExclamationCircleOutlined, UserOutlined } from "@ant-design/icons";
-import { Alert, Avatar, Button, Dropdown, Flex, Layout, Menu, Modal, Typography } from "antd";
+import { Alert, Avatar, Button, Dropdown, Flex, Layout, Menu, Modal, Typography, message } from "antd";
 import { Content, Header } from "antd/es/layout/layout";
 import Title from "antd/es/typography/Title";
 import React from "react";
 import KanbanBoard from "./KanbanBoard";
-import { useMutation, useQueryClient } from "react-query";
-import { deleteBoard } from "../../../api";
+import { useMutation, useQuery, useQueryClient } from "react-query";
+import { deleteBoard, deleteUserFromBoard, getCurrentRole, getRoleByBoardId } from "../../../api";
 import { MoreVert } from "@mui/icons-material";
 
 const KanbanLayout = ({
   board,
+  boardId,
   usersBoard,
   columns,
   updateColumns,
@@ -27,6 +28,17 @@ const KanbanLayout = ({
       window.location.href = "/boards";
     },
   });
+
+  const { data: currentRole, isLoading: currentRoleLoading } = useQuery("currentRole", () => getCurrentRole(userId, boardId), {
+    enabled: !!userId,
+    refetchOnWindowFocus: false,
+    keepPreviousData: true,
+  });
+  const { data: isOwner, isLoading: ownerLoading } = useQuery("isOwner", () => getRoleByBoardId(userId, boardId), {
+    enabled: !!userId,
+    refetchOnWindowFocus: false,
+    keepPreviousData: true,
+  });
   const showDeleteConfirm = () => {
     Modal.confirm({
       title: "Вы уверены, что хотите удалить доску?",
@@ -36,6 +48,18 @@ const KanbanLayout = ({
       onOk: () => DeleteBoardMutation.mutate(),
     });
   };
+  const handleDeleteUser = async (userId) => {
+    try {
+      await deleteUserFromBoard(userId, boardId);
+      window.location.href = "/boards";
+      queryClient.invalidateQueries(["users"]);
+    } catch (error) {
+      message.error("Произошла ошибка при выходе.");
+    }
+  };
+  if (currentRole === undefined) {
+    return <></>;
+  }
   return (
     <Layout>
       <Header
@@ -49,11 +73,17 @@ const KanbanLayout = ({
         }}>
         <div style={{ alignItems: "center", display: "flex" }}>
           <Typography.Text style={{ fontSize: "24px", fontFamily: "Arial", color: "black", fontWeight: "bold" }}>{board?.title}</Typography.Text>
+
           <Dropdown
             overlay={
               <Menu>
-                <Menu.Item danger onClick={showDeleteConfirm}>
-                  Удалить доску
+                {isOwner && (
+                  <Menu.Item danger onClick={showDeleteConfirm}>
+                    Удалить доску
+                  </Menu.Item>
+                )}
+                <Menu.Item danger onClick={() => handleDeleteUser(userId)}>
+                  Покинуть доску
                 </Menu.Item>
               </Menu>
             }>
@@ -70,19 +100,24 @@ const KanbanLayout = ({
         </Avatar.Group>
       </Header>
       <div style={{ display: "flex", padding: "0px 10px 0px 10px", gap: "5px" }}>
-        <Button
-          style={{ textAlign: "left", padding: "4px 10px" }}
-          onClick={() => {
-            setOpenAddSectionModal(true);
-          }}>
-          <UserOutlined /> Добавить секцию
-        </Button>
-        <Button
-          onClick={() => {
-            setOpenAddPriorityModal(true);
-          }}>
-          Метки
-        </Button>
+        {(currentRole?.canAddColumns || isOwner) && (
+          <Button
+            style={{ textAlign: "left", padding: "4px 10px" }}
+            onClick={() => {
+              setOpenAddSectionModal(true);
+            }}>
+            <UserOutlined /> Добавить секцию
+          </Button>
+        )}
+
+        {(currentRole?.canCreatePriorities || isOwner) && (
+          <Button
+            onClick={() => {
+              setOpenAddPriorityModal(true);
+            }}>
+            Метки
+          </Button>
+        )}
       </div>
       <Content>
         <div style={{ padding: 10, height: "100%" }}>

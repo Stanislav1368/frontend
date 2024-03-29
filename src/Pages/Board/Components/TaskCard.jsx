@@ -28,7 +28,7 @@ const TaskCard = ({ task, isDragging, deleteTask, userId, boardId }) => {
   };
   const handleArchiveTask = async (userId, boardId, columnId, taskId) => {
     await taskChangeArchivingStatus(userId, boardId, columnId, taskId, true);
-    console.log();
+
     queryClient.invalidateQueries(["columns"]);
   };
   const handleTaskCompletion = () => {
@@ -37,7 +37,7 @@ const TaskCard = ({ task, isDragging, deleteTask, userId, boardId }) => {
       queryClient.invalidateQueries(["columns"]);
     });
   };
-  console.log(task);
+
   return (
     <>
       {task?.priority ? ( // Проверяем наличие приоритета у задачи

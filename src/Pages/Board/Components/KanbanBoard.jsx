@@ -1,14 +1,17 @@
 import React, { useEffect, useState } from "react";
 import { Card, Row, Col, Typography, Modal, Form, Input, DatePicker, Checkbox, Select, Button, Flex, Badge } from "antd";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
-import { addTask, deleteTask, updateBoardWithColumns, updateStateTitle } from "../../../api";
+import { addTask, deleteTask, fetchUser, getCurrentRole, getRoleByBoardId, updateBoardWithColumns, updateStateTitle } from "../../../api";
 import { PlusOutlined, PlusSquareOutlined } from "@ant-design/icons";
 import "./KanbanBoard.css";
 import TaskCard from "./TaskCard";
-import { useQueryClient } from "react-query";
+import { useQuery, useQueryClient } from "react-query";
 
 const KanbanBoard = ({ columns, updateColumns, boardId, userId, users, priorities }) => {
   const queryClient = useQueryClient();
+  const { data: currentRole, isLoading: currentRoleLoading } = useQuery("currentRole", () => getCurrentRole(userId, boardId));
+  const { data: isOwner, isLoading: ownerLoading } = useQuery("isOwner", () => getRoleByBoardId(userId, boardId));
+
   const [editingColumnId, setEditingColumnId] = useState(null);
   const onDragEnd = (result) => {
     const { source, destination } = result;
@@ -65,7 +68,7 @@ const KanbanBoard = ({ columns, updateColumns, boardId, userId, users, prioritie
   const handleOpenTaskModal = (stateId) => {
     const column = columns.find((column) => column.id === stateId);
     setSelectedColumnId(column.id);
-    console.log(stateId, column.id);
+
     setOpenAddTaskModal(true);
   };
   const [openAddTaskModal, setOpenAddTaskModal] = useState(false);
@@ -109,6 +112,8 @@ const KanbanBoard = ({ columns, updateColumns, boardId, userId, users, prioritie
       console.error(error);
     }
   };
+  if (!ownerLoading || !currentRoleLoading) {
+  }
 
   return (
     <>
@@ -123,6 +128,8 @@ const KanbanBoard = ({ columns, updateColumns, boardId, userId, users, prioritie
                 return (
                   <div key={column?.id} style={{ display: "flex", flexDirection: "column" }}>
                     <ColumnHeader
+                      currentRole={currentRole}
+                      isOwner={isOwner}
                       column={column}
                       handleOpenTaskModal={handleOpenTaskModal}
                       userId={userId}
@@ -138,7 +145,11 @@ const KanbanBoard = ({ columns, updateColumns, boardId, userId, users, prioritie
                           {column?.tasks
                             ?.sort((a, b) => a.order - b.order)
                             .map((task, index) => (
-                              <Draggable key={task.id} draggableId={`${task.id}`} index={index}>
+                              <Draggable
+                                key={task.id}
+                                draggableId={`${task.id}`}
+                                index={index}
+                                isDragDisabled={!isOwner && !currentRole?.canAddTasks}>
                                 {(provided, snapshot) => (
                                   <div ref={provided.innerRef} {...provided.draggableProps} {...provided.dragHandleProps}>
                                     {!task.isArchived && (
@@ -201,7 +212,7 @@ const KanbanBoard = ({ columns, updateColumns, boardId, userId, users, prioritie
           </Form.Item>
           <Form.Item>
             <Button type="primary" htmlType="submit">
-              Add Task
+              Добавить задачу
             </Button>
           </Form.Item>
         </Form>
@@ -209,7 +220,7 @@ const KanbanBoard = ({ columns, updateColumns, boardId, userId, users, prioritie
     </>
   );
 };
-const ColumnHeader = ({ column, handleOpenTaskModal, userId, boardId, editingColumnId, setEditingColumnId }) => {
+const ColumnHeader = ({ column, handleOpenTaskModal, userId, boardId, editingColumnId, setEditingColumnId, currentRole, isOwner }) => {
   const queryClient = useQueryClient();
   const [isEditing, setIsEditing] = useState(false);
   const [newTitle, setNewTitle] = useState(column?.title);
@@ -269,9 +280,12 @@ const ColumnHeader = ({ column, handleOpenTaskModal, userId, boardId, editingCol
             onKeyPress={handleKeyPress}
             onKeyDown={handleKeyDown}
           />
-          <Typography.Title level={4} style={{ margin: "0", padding: "0px" }}>
-            <PlusOutlined onClick={() => handleOpenTaskModal(column?.id)} />
-          </Typography.Title>
+
+          {(currentRole?.canAddTasks || isOwner) && (
+            <Typography.Title level={4} style={{ margin: "0", padding: "0px" }}>
+              <PlusOutlined onClick={() => handleOpenTaskModal(column?.id)} />
+            </Typography.Title>
+          )}
         </Flex>
       ) : (
         <Flex style={{ justifyContent: "space-between" }}>
@@ -281,9 +295,12 @@ const ColumnHeader = ({ column, handleOpenTaskModal, userId, boardId, editingCol
             onClick={() => handleTitleClick(column.id)}>
             {column?.title}
           </Typography.Title>
-          <Typography.Title level={4} style={{ margin: "0", padding: "0px" }}>
-            <PlusOutlined onClick={() => handleOpenTaskModal(column?.id)} />
-          </Typography.Title>
+     
+          {(currentRole?.canAddTasks || isOwner) && (
+            <Typography.Title level={4} style={{ margin: "0", padding: "0px" }}>
+              <PlusOutlined onClick={() => handleOpenTaskModal(column?.id)} />
+            </Typography.Title>
+          )}
         </Flex>
       )}
     </Card>

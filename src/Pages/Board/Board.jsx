@@ -13,7 +13,9 @@ import SocketApi, {
   fetchStates,
   fetchUserId,
   fetchUsersByBoard,
+  getCurrentRole,
   getPriorities,
+  getRoleByBoardId,
   updateBoardWithColumns,
 } from "../../api";
 // import "../Boards/Boards.css";
@@ -35,6 +37,16 @@ const Board = () => {
   const hexString = React.useMemo(() => (typeof colorHex === "string" ? colorHex : colorHex?.toHexString()), [colorHex]);
   const { boardId } = useParams();
   const { data: userId } = useQuery("userId", fetchUserId, {
+    refetchOnWindowFocus: false,
+    keepPreviousData: true,
+  });
+  const { data: currentRole, isLoading: currentRoleLoading } = useQuery("currentRole", () => getCurrentRole(userId, boardId), {
+    enabled: !!userId,
+    refetchOnWindowFocus: false,
+    keepPreviousData: true,
+  });
+  const { data: isOwner, isLoading: ownerLoading } = useQuery("isOwner", () => getRoleByBoardId(userId, boardId), {
+    enabled: !!userId,
     refetchOnWindowFocus: false,
     keepPreviousData: true,
   });
@@ -117,6 +129,7 @@ const Board = () => {
               <Menu.Item style={{ padding: "0px 16px 0px 16px" }} icon={<AccountTreeOutlined style={{ fontSize: "18px" }} />}>
                 <Link to={`/boards/${boardId}/gant`}>Гант</Link>
               </Menu.Item>
+
               <Menu.Item style={{ padding: "0px 16px 0px 16px" }} icon={<ArchiveIcon style={{ fontSize: "18px" }} />}>
                 <Link to={`/boards/${boardId}/archive`}>Архив</Link>
               </Menu.Item>
@@ -136,7 +149,7 @@ const Board = () => {
                   path="/"
                   index
                   element={
-                    <KanbanLayout
+                    <KanbanLayout boardId={boardId}
                       board={board}
                       usersBoard={usersBoard}
                       columns={columns}
