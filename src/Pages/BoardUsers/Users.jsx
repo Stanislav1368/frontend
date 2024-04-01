@@ -3,6 +3,7 @@ import { Select, Input, Button, message, Modal, Form, Table, Layout, Avatar, Fle
 import { ExclamationCircleOutlined, PlusOutlined } from "@ant-design/icons";
 import {
   addUserInBoard,
+  createNotification,
   deleteBoard,
   deleteUserFromBoard,
   fetchUserId,
@@ -10,6 +11,7 @@ import {
   getCurrentRole,
   getRoleByBoardId,
   getRoles,
+
   updateRole,
 } from "../../api";
 import { useMutation, useQuery, useQueryClient } from "react-query";
@@ -57,14 +59,22 @@ const Users = () => {
     }
   };
 
-  const handleInviteUser = async (values) => {
+  // const handleInviteUser = async (values) => {
+  //   try {
+  //     await addUserInBoard(values.userId, boardId); // Здесь предполагается, что values содержит userId и boardId
+  //     message.success("Пользователь успешно добавлен на доску!");
+  //     queryClient.invalidateQueries(["users"]);
+  //     setShowAddUserModal(false);
+  //   } catch (error) {
+  //     message.error("Произошла ошибка при добавлении пользователя на доску.");
+  //   }
+  // };
+  const handleSendInvite = async (values) => {
     try {
-      await addUserInBoard(values.userId, boardId); // Здесь предполагается, что values содержит userId и boardId
-      message.success("Пользователь успешно добавлен на доску!");
-      queryClient.invalidateQueries(["users"]);
-      setShowAddUserModal(false);
+      await createNotification(values.email, boardId, "Приглашение", "Приглашение на доску"); // Здесь предполагается, что values содержит userId и boardId
+      message.success("Приглашение отправлено!");
     } catch (error) {
-      message.error("Произошла ошибка при добавлении пользователя на доску.");
+      message.error(`Произошла ошибка при отправке приглашения.`);
     }
   };
 
@@ -135,7 +145,7 @@ const Users = () => {
       )}
 
       <Modal title="Добавить пользователя на доску" visible={showAddUserModal} onCancel={() => setShowAddUserModal(false)} footer={null}>
-        <AddUserToBoard onCreate={handleInviteUser} onCancel={() => setShowAddUserModal(false)} />
+        <AddUserToBoard onCreate={handleSendInvite} onCancel={() => setShowAddUserModal(false)} />
       </Modal>
     </div>
   );
@@ -155,7 +165,7 @@ const AddUserToBoard = ({ onCreate, onCancel }) => {
 
   return (
     <Form form={form} onFinish={handleFinish}>
-      <Form.Item name="userId" label="Email" rules={[{ required: true, message: "Пожалуйста, введите email" }]}>
+      <Form.Item name="email" label="Email" rules={[{ required: true, message: "Пожалуйста, введите email" }]}>
         <Input />
       </Form.Item>
       <div style={{ display: "flex", alignItems: "center" }}>

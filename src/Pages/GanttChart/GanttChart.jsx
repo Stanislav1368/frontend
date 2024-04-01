@@ -1,5 +1,8 @@
-import moment from "moment";
 import React from "react";
+import { Table } from "antd";
+import moment from "moment";
+import "./GanttChart.css";
+import { CheckCircleTwoTone } from "@ant-design/icons";
 
 const GanttChart = ({ data }) => {
   const allTasks = data?.reduce((accumulator, state) => {
@@ -7,63 +10,104 @@ const GanttChart = ({ data }) => {
   }, []);
 
   const allDates = allTasks?.reduce((dates, task) => {
-    const startDate = new Date(task.startDate);
-    const endDate = task.endDate ? new Date(task.endDate) : startDate;
-    let currentDate = new Date(startDate);
+    const startDate = moment(task.startDate);
+    const endDate = task.endDate ? moment(task.endDate) : startDate;
+    let currentDate = moment(startDate);
 
     while (currentDate <= endDate) {
-      dates.push(new Date(currentDate).toISOString().split("T")[0]);
-      currentDate.setDate(currentDate.getDate() + 1);
+      dates.push(currentDate.format("YYYY-MM-DD"));
+      currentDate.add(1, "days");
     }
 
     return dates;
   }, []);
 
-  const uniqueDates = [...new Set(allDates)];
-  uniqueDates.sort((a, b) => new Date(a) - new Date(b));
+  const uniqueDates = [...new Set(allDates)].sort(); // Sorting dates directly
+
+  const columns = [
+    {
+      title: "Название задачи",
+      dataIndex: "taskTitle",
+      fixed: "left",
+    },
+    {
+      title: "Статус",
+      dataIndex: "state",
+      key: "state",
+      fixed: "left",
+    },
+    {
+      title: "Начало",
+      dataIndex: "startDate",
+      key: "startDate",
+      fixed: "left",
+      defaultSortOrder: "descend",
+      sorter: (a, b) => moment(a.startDate) - moment(b.startDate),
+    },
+    {
+      title: "Конец",
+      dataIndex: "endDate",
+      key: "endDate",
+      fixed: "left",
+      defaultSortOrder: "descend",
+      sorter: (a, b) => moment(a.endDate) - moment(b.endDate),
+    },
+    ...uniqueDates.map((date) => {
+      return {
+        title: date,
+        dataIndex: date,
+        key: date,
+        render: (text, record) => {
+          const isTaskDate = record[date];
+          const isCompleted = record.isCompleted || false;
+          return {
+            children: isCompleted && isTaskDate ? <CheckCircleTwoTone twoToneColor="#52c41a" /> : null,
+            props: {
+              style: {
+                background: isTaskDate ? (isCompleted ? "lightgreen" : "lightblue") : "transparent",
+              },
+            },
+          };
+        },
+        className: "no-border-right", // Добавляем класс для стилизации столбца
+      };
+    }),
+  ];
+
+  const dataSource = data?.reduce((result, state) => {
+    const tasks = state.tasks.reduce((acc, task) => {
+      if (!task.isArchived) {
+        const taskData = {
+          key: task.id,
+          taskTitle: task.title,
+          state: state.title,
+          startDate: moment(task.startDate).locale("ru").format("DD.MM.YYYY, HH:mm:ss"),
+          endDate: moment(task.endDate).locale("ru").format("DD.MM.YYYY, HH:mm:ss"),
+          isCompleted: task.isCompleted || false, // Include isCompleted property in task data
+        };
+
+        uniqueDates.forEach((date) => {
+          const isTaskDate =
+            task.startDate &&
+            moment(task.startDate).startOf("day") <= moment(date).startOf("day") &&
+            (!task.endDate || moment(task.endDate).startOf("day") >= moment(date).startOf("day"));
+          taskData[date] = isTaskDate;
+        });
+
+        acc.push(taskData);
+      }
+
+      return acc;
+    }, []);
+
+    result.push(...tasks);
+
+    return result;
+  }, []);
 
   return (
-    <div>
-      <div style={{ overflowX: "auto" }}>
-        {/* <div style={{ display: "flex", alignItems: "center" }}>
-          {uniqueDates.map((date, index) => (
-            <div key={index} style={{ textAlign: "center", minWidth: `${100 / uniqueDates.length}%`, borderRight: "1px solid #ccc" }}>
-              {new Date(date).toLocaleDateString("en-US", { day: "numeric", month: "short" })}
-            </div>
-          ))}
-        </div> */}
-        <table style={{ borderSpacing: "0" }}>
-          <thead>
-            <tr>
-              <th>Название задачи</th>
-              {uniqueDates.map((date, index) => (
-                <th key={index}>{new Date(date).toLocaleDateString("en-US", { day: "numeric", month: "short" })}</th>
-              ))}
-            </tr>
-          </thead>
-          <tbody>
-            {data?.map((state, stateIndex) => (
-              <React.Fragment key={stateIndex}>
-                <tr>
-                  <th colSpan={uniqueDates.length + 1}>{state.title}</th>
-                </tr>
-                {state.tasks.map((task, taskIndex) => (
-                  <tr key={taskIndex}>
-                    <td>{task.title}</td>
-                    {uniqueDates.map((date, dateIndex) => {
-                      return task.startDate && moment.utc(task.startDate).startOf('day') <= moment.utc(date).startOf('day') && (!task.endDate || moment.utc(task.endDate).startOf('day') >= moment.utc(date).startOf('day')) ? (
-                        <td key={dateIndex} style={{ background: "lightblue" }}></td>
-                      ) : (
-                        <td key={dateIndex}></td>
-                      );
-                    })}
-                  </tr>
-                ))}
-              </React.Fragment>
-            ))}
-          </tbody>
-        </table>
-      </div>
+    <div style={{ overflowX: "auto" }}>
+      <Table columns={columns} dataSource={dataSource} bordered pagination={false} scroll={{ x: "max-content" }} />
     </div>
   );
 };

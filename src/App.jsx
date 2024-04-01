@@ -6,6 +6,7 @@ import LoginPage from "./Pages/Login/LoginPage";
 import RegistrationPage from "./Pages/Registration/RegistrationPage";
 import Board from "./Pages/Board/Board";
 import Boards from "./Pages/Boards/Boards";
+import UserProfile from "./Pages/UserProfile/UserProfile";
 
 const isAuthenticated = () => {
   const token = localStorage.getItem("token");
@@ -38,6 +39,13 @@ function App() {
                 </RequireAuth>
               }></Route>
             <Route
+              path="/profile"
+              element={
+                <RequireAuth>
+                  <UserProfile />
+                </RequireAuth>
+              }></Route>
+            <Route
               index
               path="boards/"
               element={
@@ -62,4 +70,3 @@ function App() {
 }
 
 export default App;
-

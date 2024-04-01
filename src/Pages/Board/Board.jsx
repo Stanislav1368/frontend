@@ -20,7 +20,7 @@ import SocketApi, {
 } from "../../api";
 // import "../Boards/Boards.css";
 import { BrowserRouter, Link, Route, Router, Routes, useParams } from "react-router-dom";
-import { AccountTreeOutlined, Dashboard, ViewKanbanOutlined } from "@mui/icons-material";
+import { AccountTreeOutlined, Dashboard, RollerShades, SecurityOutlined, ViewKanbanOutlined } from "@mui/icons-material";
 import Archive from "../Archive/Archive";
 import GanttChart from "../GanttChart/GanttChart";
 import KanbanLayout from "./Components/KanbanLayout";
@@ -28,6 +28,7 @@ import Navbar from "../../Components/BoardHeader/Navbar/Navbar";
 import Users from "../BoardUsers/Users";
 import Roles from "../BoardRoles/Roles";
 import { Content } from "antd/es/layout/layout";
+import { TeamOutlined, UserOutlined } from "@ant-design/icons";
 
 const Board = () => {
   const queryClient = useQueryClient();
@@ -134,10 +135,10 @@ const Board = () => {
                 <Link to={`/boards/${boardId}/archive`}>Архив</Link>
               </Menu.Item>
               <Divider style={{ margin: "8px 0px 8px 0px" }}></Divider>
-              <Menu.Item style={{ padding: "0px 16px 0px 16px" }} icon={<Dashboard style={{ fontSize: "18px" }} />}>
+              <Menu.Item style={{ padding: "0px 16px 0px 16px" }} icon={<TeamOutlined style={{ fontSize: "18px" }} />}>
                 <Link to={`/boards/${boardId}/users`}>Пользователи</Link>
               </Menu.Item>
-              <Menu.Item style={{ padding: "0px 16px 0px 16px" }} icon={<Dashboard style={{ fontSize: "18px" }} />}>
+              <Menu.Item style={{ padding: "0px 16px 0px 16px" }} icon={<SecurityOutlined style={{ fontSize: "18px" }} />}>
                 <Link to={`/boards/${boardId}/roles`}>Роли</Link>
               </Menu.Item>
             </Menu>
@@ -149,7 +150,8 @@ const Board = () => {
                   path="/"
                   index
                   element={
-                    <KanbanLayout boardId={boardId}
+                    <KanbanLayout
+                      boardId={boardId}
                       board={board}
                       usersBoard={usersBoard}
                       columns={columns}

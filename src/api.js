@@ -38,7 +38,6 @@ export async function addUserInBoard(userId, boardId) {
 export async function deleteUserFromBoard(userId, boardId) {
   try {
     await axios.delete(`${BASE_URL}/users/${userId}/boards/${boardId}/deleteUser`);
-    console.log("User successfully removed from the board");
   } catch (error) {
     console.error("Failed to remove user from the board:", error.message);
     // Handle error as needed
@@ -100,7 +99,6 @@ export async function updateBoard(userId, boardId, updatedData) {
 }
 export const fetchBoards = async (userId) => {
   const response = await axios.get(`${BASE_URL}/users/${userId}/boards`);
-
   return response.data;
 };
 
@@ -178,11 +176,16 @@ export const getRole = async (boardId, roleId) => {
 export async function createRole(data, boardId) {
   await axios.post(`${BASE_URL}/boards/${boardId}/roles`, data);
 }
+
+export async function deleteRole(boardId, roleId) {
+  console.log(boardId, roleId);
+  await axios.delete(`${BASE_URL}/boards/${boardId}/roles/${roleId}`);
+}
+
 export async function changeRole(boardId, roleId, updatedData) {
-  console.log(boardId, roleId, updatedData);
   try {
     const response = await axios.put(`${BASE_URL}/boards/${boardId}/roles/${roleId}`, updatedData);
-    return response.data; 
+    return response.data;
   } catch (error) {
     throw new Error(`Ошибка при обновлении роли: ${error.message}`);
   }
@@ -229,4 +232,39 @@ export const updateBoardWithColumns = async (userId, boardId, newColumns) => {
 export const updateStateTitle = async (userId, boardId, stateId, newTitle) => {
   const response = await axios.put(`${BASE_URL}/users/${userId}/boards/${boardId}/states/${stateId}`, { title: newTitle });
   return response.data;
+};
+
+export const fetchUserByEmail = async (email) => {
+  const response = await axios.get(`${BASE_URL}/users/byEmail?email=${email}`);
+
+  return response.data;
+};
+
+export const getNotifications = async (userId) => {
+  const response = await axios.get(`${BASE_URL}/users/${userId}/notifications`);
+  return response.data;
+};
+
+export const createNotification = async (email, boardId, title, message) => {
+  try {
+    const user = await fetchUserByEmail(email);
+    const userId = user.id;
+
+    const response = await axios.post(`${BASE_URL}/users/${userId}/notifications`, { title, message, userId, boardId });
+
+    return response.data;
+  } catch (error) {
+    console.error(`Error deleting notification: ${error.message}`);
+    throw error;
+  }
+};
+
+export const deleteNotification = async (userId, notificationId) => {
+  try {
+    const response = await axios.delete(`${BASE_URL}/users/${userId}/notifications/${notificationId}`);
+    return response.data;
+  } catch (error) {
+    console.error(`Error deleting notification: ${error.message}`);
+    throw error;
+  }
 };

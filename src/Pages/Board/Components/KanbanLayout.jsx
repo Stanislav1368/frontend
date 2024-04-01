@@ -119,19 +119,15 @@ const KanbanLayout = ({
           </Button>
         )}
       </div>
-      <Content>
-        <div style={{ padding: 10, height: "100%" }}>
-          <div style={{ height: "100%", display: "flex" }}>
-            <KanbanBoard
-              columns={columns}
-              updateColumns={updateColumns} // Передаем функцию для обновления данных
-              boardId={board?.id}
-              userId={userId}
-              users={usersBoard}
-              priorities={priorities}
-            />
-          </div>
-        </div>
+      <Content style={{ padding: 10 }}>
+        <KanbanBoard
+          columns={columns}
+          updateColumns={updateColumns} // Передаем функцию для обновления данных
+          boardId={board?.id}
+          userId={userId}
+          users={usersBoard}
+          priorities={priorities}
+        />
       </Content>
     </Layout>
   );

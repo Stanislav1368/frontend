@@ -32,8 +32,6 @@ const Boards = () => {
 
     const updatedFavorite = !boards.find((board) => board.id === boardId).favorite;
 
-
-
     await updateBoard(user.id, boardId, { favorite: updatedFavorite });
 
     queryClient.setQueryData("boards", updatedBoards);

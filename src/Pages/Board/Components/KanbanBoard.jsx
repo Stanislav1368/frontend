@@ -6,6 +6,7 @@ import { PlusOutlined, PlusSquareOutlined } from "@ant-design/icons";
 import "./KanbanBoard.css";
 import TaskCard from "./TaskCard";
 import { useQuery, useQueryClient } from "react-query";
+const { RangePicker } = DatePicker;
 
 const KanbanBoard = ({ columns, updateColumns, boardId, userId, users, priorities }) => {
   const queryClient = useQueryClient();
@@ -92,7 +93,7 @@ const KanbanBoard = ({ columns, updateColumns, boardId, userId, users, prioritie
   };
   const handleAddTask = async (values) => {
     setOpenAddTaskModal(false);
-
+    console.log(values);
     try {
       const addedTask = await addTask(values, userId, boardId, selectedColumnId);
 
@@ -139,7 +140,7 @@ const KanbanBoard = ({ columns, updateColumns, boardId, userId, users, prioritie
                     <Droppable droppableId={`${columnId}`}>
                       {(provided) => (
                         <div
-                          style={{ gap: "10px", display: "flex", flexDirection: "column", flex: "1" }} // Добавлен стиль overflowY для вертикальной прокрутки
+                          style={{ display: "flex", flexDirection: "column", flex: "1" }} // Добавлен стиль overflowY для вертикальной прокрутки
                           ref={provided.innerRef}
                           {...provided.droppableProps}>
                           {column?.tasks
@@ -174,25 +175,24 @@ const KanbanBoard = ({ columns, updateColumns, boardId, userId, users, prioritie
               })}
         </div>
       </DragDropContext>
-      <Modal
-        title={`Добавить задачу в столбец "${selectedColumnId}"`}
-        open={openAddTaskModal}
-        onCancel={() => setOpenAddTaskModal(false)}
-        footer={null}>
+      <Modal title={`Добавление задачи`} open={openAddTaskModal} onCancel={() => setOpenAddTaskModal(false)} footer={null}>
         <Form form={form} onFinish={handleAddTask} layout="vertical">
-          <Form.Item label="Title" name="title" rules={[{ required: true, message: "Please enter title" }]}>
+          <Form.Item label="Заголовок" name="title" rules={[{ required: true, message: "Please enter title" }]}>
             <Input />
           </Form.Item>
-          <Form.Item label="Description" name="description" rules={[{ required: true, message: "Please enter description" }]}>
+          <Form.Item label="Описание" name="description" rules={[{ required: true, message: "Please enter description" }]}>
             <Input />
           </Form.Item>
-          <Form.Item label="Start Date" name="startDate">
-            <DatePicker showTime format="YYYY-MM-DD HH:mm:ss" />
+          <Form.Item label="Выберите даты" name="dates" rules={[{ required: true, message: "Пожалуйста, выберите даты" }]}>
+            <RangePicker />
           </Form.Item>
-          <Form.Item label="End Date" name="endDate">
-            <DatePicker showTime format="YYYY-MM-DD HH:mm:ss" />
+          {/* <Form.Item label="Начало задачи" name="startDate">
+            <DatePicker placeholder="Выберите дату и время" showTime format="YYYY-MM-DD HH:mm:ss" />
           </Form.Item>
-          <Form.Item label="Users" name="userIds">
+          <Form.Item label="Конец задачи" name="endDate">
+            <DatePicker placeholder="Выберите дату и время" showTime format="YYYY-MM-DD HH:mm:ss" />
+          </Form.Item> */}
+          <Form.Item label="Ответственные" name="userIds">
             <Checkbox.Group>
               {users?.map((user) => (
                 <Checkbox key={user.id} value={user.id}>
@@ -201,7 +201,7 @@ const KanbanBoard = ({ columns, updateColumns, boardId, userId, users, prioritie
               ))}
             </Checkbox.Group>
           </Form.Item>
-          <Form.Item label="Priority" name="priorityId">
+          <Form.Item label="Метка" name="priorityId">
             <Select>
               {priorities?.map((priority) => (
                 <Select.Option key={priority.id} value={priority.id}>
@@ -295,7 +295,7 @@ const ColumnHeader = ({ column, handleOpenTaskModal, userId, boardId, editingCol
             onClick={() => handleTitleClick(column.id)}>
             {column?.title}
           </Typography.Title>
-     
+
           {(currentRole?.canAddTasks || isOwner) && (
             <Typography.Title level={4} style={{ margin: "0", padding: "0px" }}>
               <PlusOutlined onClick={() => handleOpenTaskModal(column?.id)} />

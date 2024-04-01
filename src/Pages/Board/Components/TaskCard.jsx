@@ -1,14 +1,39 @@
 import { CalendarOutlined, CheckCircleOutlined, ExclamationCircleOutlined, UserOutlined } from "@ant-design/icons";
 import { Archive, ArchiveOutlined, Delete, DeleteOutline, DeleteOutlineOutlined } from "@mui/icons-material";
-import { Avatar, Badge, Button, Card, Checkbox, Descriptions, Divider, Drawer, Flex, List, Modal, Tag } from "antd";
+import { Avatar, Badge, Button, Card, Checkbox, DatePicker, Descriptions, Divider, Drawer, Flex, Input, List, Modal, Tag } from "antd";
 import moment from "moment";
 import React, { useState } from "react";
 import Comments from "../../../Components/Comments";
-import { taskChangeArchivingStatus, updateTaskIsCompleted } from "../../../api";
-import { useQueryClient } from "react-query";
+import { getRoleByBoardId, taskChangeArchivingStatus, updateTaskIsCompleted } from "../../../api";
+import { useQuery, useQueryClient } from "react-query";
 
 const TaskCard = ({ task, isDragging, deleteTask, userId, boardId }) => {
   const [open, setOpen] = useState(false);
+  const [title, setTitle] = useState(task?.title || "");
+  const [description, setDescription] = useState(task?.description || "");
+  const [userIds, setUserIds] = useState(task?.userIds || []);
+  const [priorityId, setPriorityId] = useState(task?.priorityId || null);
+  console.log(task);
+  const [startDate, setStartDate] = useState(task?.startDate || null);
+  const [endDate, setEndDate] = useState(task?.endDate || null);
+  console.log(startDate);
+  const handleUpdateTask = async () => {
+    try {
+      const updateData = {
+        title: title,
+        description: description,
+        userIds: userIds,
+        priorityId: priorityId,
+        dates: [startDate, endDate],
+      };
+
+      await updateTask(userId, boardId, taskId, updateData);
+      // Обновите состояние задачи после успешного обновления
+      // Например, вызовите функцию для загрузки обновленных данных задачи
+    } catch (error) {
+      console.error("Ошибка при обновлении задачи", error);
+    }
+  };
   const queryClient = useQueryClient();
   const showDrawer = () => {
     setOpen(true);
@@ -24,8 +49,29 @@ const TaskCard = ({ task, isDragging, deleteTask, userId, boardId }) => {
       okType: "danger",
       content: "Это действие нельзя отменить.",
       onOk: () => deleteTask(task?.stateId, task?.id),
+      cancelText: "Отмена",
     });
   };
+  const showUpdateConfirm = () => {
+    Modal.confirm({
+      title: "Изменение задачи",
+      content: (
+        <>
+          <Input required value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Название задачи" />
+          <Input.TextArea required value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Описание задачи" />
+          <DatePicker value={"10/10/2020"} onChange={(date) => setStartDate(date)} />
+          <DatePicker value={endDate} onChange={(date) => setEndDate(date)} />
+        </>
+      ),
+      onOk: () => handleUpdateTask(),
+      cancelText: "Отмена",
+    });
+  };
+  const { data: isOwner, isLoading: ownerLoading } = useQuery("isOwner", () => getRoleByBoardId(userId, boardId), {
+    enabled: !!userId,
+    refetchOnWindowFocus: false,
+    keepPreviousData: true,
+  });
   const handleArchiveTask = async (userId, boardId, columnId, taskId) => {
     await taskChangeArchivingStatus(userId, boardId, columnId, taskId, true);
 
@@ -39,7 +85,7 @@ const TaskCard = ({ task, isDragging, deleteTask, userId, boardId }) => {
   };
 
   return (
-    <>
+    <div style={{ marginBottom: "10px" }}>
       {task?.priority ? ( // Проверяем наличие приоритета у задачи
         <Badge.Ribbon
           text={`${task?.priority?.name}`}
@@ -50,12 +96,15 @@ const TaskCard = ({ task, isDragging, deleteTask, userId, boardId }) => {
           <Card
             title={
               <>
-                <input
-                  className="checkbox"
-                  type="checkbox"
-                  onChange={handleTaskCompletion}
-                  checked={task?.isCompleted}
-                  onClick={(e) => e.stopPropagation()}></input>
+                {(isOwner || task.users.some((user) => user.id === userId)) && (
+                  <Checkbox
+                    className="checkbox"
+                    type="checkbox"
+                    onChange={handleTaskCompletion}
+                    checked={task?.isCompleted}
+                    onClick={(e) => e.stopPropagation()}
+                  />
+                )}
                 {task?.title}
               </>
             }
@@ -90,13 +139,17 @@ const TaskCard = ({ task, isDragging, deleteTask, userId, boardId }) => {
         <Card
           title={
             <>
-              <input
-                className="checkbox"
-                type="checkbox"
-                onChange={handleTaskCompletion}
-                checked={task?.isCompleted}
-                onClick={(e) => e.stopPropagation()}></input>
-              {task?.title}
+              {(isOwner || task.users.some((user) => user.id === userId)) && (
+                <Checkbox
+                  className="checkbox"
+                  type="checkbox"
+                  onChange={handleTaskCompletion}
+                  checked={task?.isCompleted}
+                  onClick={(e) => e.stopPropagation()}
+                />
+              )}
+
+              <span style={{ marginLeft: "5px" }}>{task?.title}</span>
             </>
           }
           style={{
@@ -182,7 +235,7 @@ const TaskCard = ({ task, isDragging, deleteTask, userId, boardId }) => {
         </p>
 
         <Divider />
-        <div>
+        {/* <div>
           <p>Подзадачи:</p>
           <List
             dataSource={[
@@ -197,8 +250,9 @@ const TaskCard = ({ task, isDragging, deleteTask, userId, boardId }) => {
             )}
           />
         </div>
-        <Divider />
+        <Divider /> */}
         <Comments userId={userId} boardId={boardId} stateId={task.stateId} taskId={task.id}></Comments>
+        <Button onClick={showUpdateConfirm}>Изменить задачу</Button>
       </Drawer>
       {/* <Drawer
         width={640}
@@ -230,7 +284,7 @@ const TaskCard = ({ task, isDragging, deleteTask, userId, boardId }) => {
         </p>
         <Button>Edit Task</Button>
       </Drawer> */}
-    </>
+    </div>
   );
 };
 

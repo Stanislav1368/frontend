@@ -1,8 +1,8 @@
-import { Button, Dropdown, Flex, Typography } from "antd";
+import { Button, Dropdown, Flex, Typography, notification } from "antd";
 import { Header } from "antd/es/layout/layout";
-import React from "react";
-import { useQuery } from "react-query";
-import { fetchUser } from "../../../api";
+import React, { useEffect } from "react";
+import { useQuery, useQueryClient } from "react-query";
+import SocketApi, { fetchUser } from "../../../api";
 import "./Navbar.css";
 import { ArrowBack } from "@mui/icons-material";
 import { LogoutOutlined, ProfileOutlined, UserOutlined } from "@ant-design/icons";
@@ -23,7 +23,7 @@ const items = [
   {
     key: "2",
     label: (
-      <a>
+      <a onClick={() => (window.location.href = "/profile")}>
         <UserOutlined /> Ваш профиль
       </a>
     ),
@@ -32,6 +32,23 @@ const items = [
 const Navbar = ({ backArrow }) => {
   const { data: user, isLoading: isUserLoading } = useQuery("user", fetchUser);
 
+  const queryClient = useQueryClient();
+  useEffect(() => {
+    SocketApi.createConnection();
+    SocketApi.socket.on("sendInvite", async (userId) => {
+      console.log(user.id == userId);
+      if (user?.id === userId) {
+
+        notification.open({
+          message: "Приглашение",
+          description: "Приглашение на доску",
+        });
+        queryClient.invalidateQueries(["notifications"]);
+      }
+    });
+
+    return () => {};
+  }, []);
   return (
     <Header
       style={{
@@ -53,7 +70,7 @@ const Navbar = ({ backArrow }) => {
 
         <h1
           style={{
-            margin: 0,
+            margin: "0px",
             letterSpacing: "3.5px",
             flex: "0 0 auto",
             lineHeight: "50px",
@@ -62,7 +79,7 @@ const Navbar = ({ backArrow }) => {
             fontSize: "20px",
             fontWeight: 700,
           }}>
-          Header
+          KANBAN
         </h1>
       </Flex>
 

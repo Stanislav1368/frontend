@@ -15,7 +15,6 @@ const RegistrationPage = () => {
   });
 
   const handleRegistration = async ({ confirmPassword, ...values }) => {
-
     try {
       setLoading(true);
       await mutation.mutateAsync(values);

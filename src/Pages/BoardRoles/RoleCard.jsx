@@ -1,12 +1,23 @@
-import { Button, Checkbox, Collapse, Divider, Drawer, Form, List, Modal, Tag, Typography } from "antd";
+import { Button, Checkbox, Collapse, Divider, Drawer, Flex, Form, List, Modal, Tag, Typography, message } from "antd";
 import React, { useState } from "react";
-import { useMutation, useQueryClient } from "react-query";
-import { changeRole } from "../../api";
+import { useMutation, useQuery, useQueryClient } from "react-query";
+import { changeRole, deleteRole, fetchUserId, getCurrentRole, getRoleByBoardId } from "../../api";
 import { useParams } from "react-router-dom";
 
 const RoleCard = ({ role }) => {
   const queryClient = useQueryClient();
   const { boardId } = useParams();
+  const { data: userId, isLoading: isUserIdLoading } = useQuery("userId", fetchUserId);
+  const { data: currentRole, isLoading: currentRoleLoading } = useQuery("currentRole", () => getCurrentRole(userId, boardId), {
+    enabled: !!userId,
+    refetchOnWindowFocus: false,
+    keepPreviousData: true,
+  });
+  const { data: isOwner, isLoading: ownerLoading } = useQuery("isOwner", () => getRoleByBoardId(userId, boardId), {
+    enabled: !!userId,
+    refetchOnWindowFocus: false,
+    keepPreviousData: true,
+  });
   const changeRoleMutation = useMutation((updatedRole) => changeRole(boardId, role.id, updatedRole), {
     onSuccess: () => {
       queryClient.invalidateQueries(["roles"]);
@@ -33,6 +44,16 @@ const RoleCard = ({ role }) => {
       }
     };
   };
+  const handleDeleteRole = async (roleId) => {
+    console.log(roleId);
+    try {
+      await deleteRole(boardId, roleId);
+      queryClient.invalidateQueries(["roles"]);
+      message.success("Роль удалена");
+    } catch (error) {
+      message.error(`Произошла ошибка при удалении роли`);
+    }
+  };
 
   return (
     <>
@@ -42,7 +63,16 @@ const RoleCard = ({ role }) => {
         items={[
           {
             key: `${role.id}`,
-            label: `${role.name}`,
+            label: (
+              <Flex style={{ alignItems: "center", justifyContent: "space-between" }}>
+                {role.name}
+                {(currentRole?.canCreateRole || isOwner) && !isGuestRole && (
+                  <Button danger onClick={(e) => {handleDeleteRole(role.id), e.stopPropagation()}}>
+                    Удалить
+                  </Button>
+                )}
+              </Flex>
+            ),
             children: rights.map((right, index) => (
               <List.Item key={index}>
                 <div style={{ display: "flex", justifyContent: "space-between" }}>

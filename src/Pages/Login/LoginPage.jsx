@@ -15,7 +15,6 @@ const LoginPage = () => {
   const navigate = useNavigate();
 
   const handleLogin = async (values) => {
-
     try {
       setLoading(true);
       await mutation.mutateAsync(values);
@@ -37,7 +36,7 @@ const LoginPage = () => {
               { required: true, message: "Пожалуйста, введите почту!" },
               {
                 type: "email",
-                message: "Пожалуйста, введите корректный адрес почты!",
+                message: "Некорректный адрес почты!",
               },
             ]}>
             <Input prefix={<UserOutlined />} placeholder="Почта" />
