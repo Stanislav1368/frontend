@@ -1,10 +1,8 @@
-import { Alert, Avatar, Button, Card, Flex, Layout, List, Menu, Space, Switch, Tabs, Typography, message, notification } from "antd";
-import React, { useEffect, useState } from "react";
+import { Alert, Avatar, Button, Layout, List, Space, Tabs, Typography, message } from "antd";
+import React, { useEffect } from "react";
 import Navbar from "../../Components/BoardHeader/Navbar/Navbar";
 import { useQuery, useQueryClient } from "react-query";
-import SocketApi, { addUserInBoard, createNotification, deleteNotification, fetchUser, getNotifications } from "../../api";
-import { Header } from "antd/es/layout/layout";
-import Sider from "antd/es/layout/Sider";
+import SocketApi, { addUserInBoard, deleteNotification, fetchUser, getNotifications } from "../../api";
 import { UserOutlined } from "@ant-design/icons";
 
 const { Content } = Layout;

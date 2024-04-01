@@ -1,13 +1,10 @@
-import React, { useContext, useState } from "react";
+import React, { useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "react-query";
-import { Link } from "react-router-dom";
 import moment from "moment/moment";
 import { AddBoard, fetchBoards, fetchUser, updateBoard } from "../../api";
 import "./Boards.css";
-import { Button, Card, Col, Flex, Form, Input, Layout, Modal, Row, Spin, Switch } from "antd";
-import ProfileButton from "../../Components/ProfileButton";
-import { Header } from "antd/es/layout/layout";
-import { HeartFilled, PlusCircleOutlined } from "@ant-design/icons";
+import { Button, Card, Col, Form, Input, Layout, Modal, Row, Switch } from "antd";
+import { PlusCircleOutlined } from "@ant-design/icons";
 import { Star } from "@mui/icons-material";
 import Navbar from "../../Components/BoardHeader/Navbar/Navbar";
 
