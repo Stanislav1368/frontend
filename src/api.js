@@ -7,7 +7,7 @@ export default class SocketApi {
   static socket;
 
   static createConnection() {
-    this.socket = io("http://http://31.129.97.240:5000");
+    this.socket = io(BASE_URL);
 
     this.socket.on("connect", () => {
       console.log("connected");
