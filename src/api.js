@@ -1,7 +1,7 @@
 import axios from "axios";
 import io from "socket.io-client";
-// const BASE_URL = "http://31.129.97.240:5000"; // Базовый URL API
-const BASE_URL = "http://localhost:5000"; // Базовый URL API
+const BASE_URL = "http://31.129.97.240:5000"; // Базовый URL API
+// const BASE_URL = "http://localhost:5000"; // Базовый URL API
 
 export default class SocketApi {
   static socket;
