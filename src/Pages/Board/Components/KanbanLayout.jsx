@@ -61,7 +61,7 @@ const KanbanLayout = ({
     return <></>;
   }
   return (
-    <Layout>
+    <Layout style={{ height: "100%" }}>
       <Header
         style={{
           backgroundColor: "#F5F5F5",
@@ -99,7 +99,7 @@ const KanbanLayout = ({
           ))}
         </Avatar.Group>
       </Header>
-      <div style={{ display: "flex", padding: "0px 10px 0px 10px", gap: "5px" }}>
+      <div style={{ display: "flex", padding: "0px 10px 10px 10px", gap: "5px", boxShadow: "0px 5px 5px -5px rgba(0,0,0,0.1)" }}>
         {(currentRole?.canAddColumns || isOwner) && (
           <Button
             style={{ textAlign: "left", padding: "4px 10px" }}
@@ -119,7 +119,7 @@ const KanbanLayout = ({
           </Button>
         )}
       </div>
-      <Content style={{ padding: 10 }}>
+      <Content style={{ padding: 10, overflowY: "auto", height: "100%" }}>
         <KanbanBoard
           columns={columns}
           updateColumns={updateColumns} // Передаем функцию для обновления данных

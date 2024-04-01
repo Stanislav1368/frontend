@@ -1,11 +1,21 @@
 import React, { useEffect, useState } from "react";
-import { Card, Row, Col, Typography, Modal, Form, Input, DatePicker, Checkbox, Select, Button, Flex, Badge } from "antd";
+import { Card, Row, Col, Typography, Modal, Form, Input, DatePicker, Checkbox, Select, Button, Flex, Badge, Dropdown, Menu } from "antd";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
-import { addTask, deleteTask, fetchUser, getCurrentRole, getRoleByBoardId, updateBoardWithColumns, updateStateTitle } from "../../../api";
-import { PlusOutlined, PlusSquareOutlined } from "@ant-design/icons";
+import {
+  addTask,
+  deleteState,
+  deleteTask,
+  fetchUser,
+  getCurrentRole,
+  getRoleByBoardId,
+  updateBoardWithColumns,
+  updateStateTitle,
+} from "../../../api";
+import { DeleteFilled, PlusOutlined, PlusSquareOutlined } from "@ant-design/icons";
 import "./KanbanBoard.css";
 import TaskCard from "./TaskCard";
 import { useQuery, useQueryClient } from "react-query";
+import { Delete, DeleteOutline } from "@mui/icons-material";
 const { RangePicker } = DatePicker;
 
 const KanbanBoard = ({ columns, updateColumns, boardId, userId, users, priorities }) => {
@@ -120,7 +130,7 @@ const KanbanBoard = ({ columns, updateColumns, boardId, userId, users, prioritie
   return (
     <>
       <DragDropContext onDragEnd={onDragEnd}>
-        <div style={{ display: "flex", gap: "10px", height: "100%", overflowX: "auto", width: "100%" }}>
+        <div style={{ display: "flex", gap: "10px", height: "100%", width: "100%" }}>
           {columns &&
             typeof columns === "object" &&
             Object.keys(columns)
@@ -140,10 +150,7 @@ const KanbanBoard = ({ columns, updateColumns, boardId, userId, users, prioritie
                       setEditingColumnId={setEditingColumnId}></ColumnHeader>
                     <Droppable droppableId={`${columnId}`}>
                       {(provided) => (
-                        <div
-                          style={{ display: "flex", flexDirection: "column", flex: "1" }} // Добавлен стиль overflowY для вертикальной прокрутки
-                          ref={provided.innerRef}
-                          {...provided.droppableProps}>
+                        <div style={{ display: "flex", flexDirection: "column", flex: "1" }} ref={provided.innerRef} {...provided.droppableProps}>
                           {column?.tasks
                             ?.sort((a, b) => a.order - b.order)
                             .map((task, index) => (
@@ -176,7 +183,14 @@ const KanbanBoard = ({ columns, updateColumns, boardId, userId, users, prioritie
               })}
         </div>
       </DragDropContext>
-      <Modal title={`Добавление задачи`} open={openAddTaskModal} onCancel={() => {setOpenAddTaskModal(false); form.resetFields();}} footer={null}>
+      <Modal
+        title={`Добавление задачи`}
+        open={openAddTaskModal}
+        onCancel={() => {
+          setOpenAddTaskModal(false);
+          form.resetFields();
+        }}
+        footer={null}>
         <Form form={form} onFinish={handleAddTask} layout="vertical">
           <Form.Item label="Заголовок" name="title" rules={[{ required: true, message: "Please enter title" }]}>
             <Input />
@@ -290,17 +304,36 @@ const ColumnHeader = ({ column, handleOpenTaskModal, userId, boardId, editingCol
         </Flex>
       ) : (
         <Flex style={{ justifyContent: "space-between" }}>
-          <Typography.Title
-            level={4}
-            style={{ margin: "0", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0px" }}
-            onClick={() => handleTitleClick(column.id)}>
-            {column?.title}
-          </Typography.Title>
+          <Flex style={{ alignItems: "center" }}>
+            <Typography.Title
+              level={4}
+              style={{ margin: "0", display: "flex", alignItems: "center", justifyContent: "space-between", padding: "0px" }}
+              onClick={() => handleTitleClick(column.id)}>
+              {column?.title}
+            </Typography.Title>
+            <DeleteOutline
+              color="error"
+              style={{ cursor: "pointer" }}
+              onClick={() =>
+                Modal.confirm({
+                  title: "Вы уверены, что хотите удалить столбец?",
+                  okType: "danger",
+                  content: "Это действие нельзя отменить.",
+                  onOk: async () => {
+                    console.log(userId, boardId, column?.id);
+                    await deleteState(userId, boardId, column?.id);
+                    queryClient.invalidateQueries("columns");
+                  },
+                })
+              }></DeleteOutline>
+          </Flex>
 
           {(currentRole?.canAddTasks || isOwner) && (
-            <Typography.Title level={4} style={{ margin: "0", padding: "0px" }}>
-              <PlusOutlined onClick={() => handleOpenTaskModal(column?.id)} />
-            </Typography.Title>
+            <Flex style={{ alignItems: "center" }}>
+              <Typography.Title level={4} style={{ margin: "0", padding: "0px" }}>
+                <PlusOutlined onClick={() => handleOpenTaskModal(column?.id)} />
+              </Typography.Title>
+            </Flex>
           )}
         </Flex>
       )}

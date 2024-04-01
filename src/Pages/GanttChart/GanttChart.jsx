@@ -13,7 +13,7 @@ const GanttChart = ({ data }) => {
     const startDate = moment(task.startDate);
     const endDate = task.endDate ? moment(task.endDate) : startDate;
     let currentDate = moment(startDate);
-
+    console.log(task.startDate);
     while (currentDate <= endDate) {
       dates.push(currentDate.format("YYYY-MM-DD"));
       currentDate.add(1, "days");
@@ -42,7 +42,7 @@ const GanttChart = ({ data }) => {
       key: "startDate",
       fixed: "left",
       defaultSortOrder: "descend",
-      sorter: (a, b) => moment(a.startDate) - moment(b.startDate),
+      sorter: (a, b) => moment(a.startDate).valueOf() - moment(b.startDate).valueOf(),
     },
     {
       title: "Конец",
@@ -50,7 +50,7 @@ const GanttChart = ({ data }) => {
       key: "endDate",
       fixed: "left",
       defaultSortOrder: "descend",
-      sorter: (a, b) => moment(a.endDate) - moment(b.endDate),
+      sorter: (a, b) => moment(a.endDate).valueOf() - moment(b.endDate).valueOf(),
     },
     ...uniqueDates.map((date) => {
       return {

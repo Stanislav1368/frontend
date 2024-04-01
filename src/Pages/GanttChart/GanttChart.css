@@ -1,4 +1,4 @@
 .no-border-right {
-  border-top: none !important;
-  border-bottom: none !important;
+  border-right: none !important;
+  /* border-bottom: none !important; */
 }
