@@ -30,6 +30,7 @@ const Archive = ({ boardId }) => {
   if (ownerLoading || currentRoleLoading) {
     return <>Loading</>;
   }
+  console.log(isArchivedTasks);
   return (
     <Layout style={{ height: "100%", margin: "0px" }}>
       {isArchivedTasks.length === 0 ? (
@@ -64,6 +65,7 @@ const Archive = ({ boardId }) => {
                 backgroundColor: !task?.isCompleted ? "#ffffff" : "#f3f3f3", // Меняем цвет фона, чтобы выделить что задача завершена
                 opacity: task?.isCompleted ? 0.6 : 1, // Уменьшаем немного прозрачность для дизейбленной карточки
               }}>
+              <div>Столбец: {task.state.title}</div>
               <div>
                 {task?.startDate && <p>Начало: {moment(task?.startDate).locale("ru").format("DD.MM.YYYY")}</p>}
                 {task?.endDate && <p>Конец: {moment(task?.endDate).locale("ru").format("DD.MM.YYYY")}</p>}

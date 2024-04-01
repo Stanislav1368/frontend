@@ -37,7 +37,7 @@ const Comments = ({ userId, boardId, stateId, taskId }) => {
                   {item.user.firstName}
                 </Avatar>
               }
-              title={<a href="https://ant.design">{item.user.firstName}</a>}
+              title={<a>{item.user.firstName}</a>}
               description={item.comment}
             />
           </List.Item>

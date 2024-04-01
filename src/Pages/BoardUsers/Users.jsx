@@ -6,12 +6,12 @@ import {
   createNotification,
   deleteBoard,
   deleteUserFromBoard,
+  fetchUser,
   fetchUserId,
   fetchUsersByBoard,
   getCurrentRole,
   getRoleByBoardId,
   getRoles,
-
   updateRole,
 } from "../../api";
 import { useMutation, useQuery, useQueryClient } from "react-query";
@@ -21,6 +21,11 @@ import { OutlinedFlag } from "@mui/icons-material";
 const Users = () => {
   const { boardId } = useParams();
   const { data: userId, isLoading: isUserIdLoading } = useQuery("userId", fetchUserId);
+  const { data: user, isLoading: isUserLoading } = useQuery("user", fetchUser, {
+    enabled: !!userId,
+    refetchOnWindowFocus: false,
+    keepPreviousData: true,
+  });
   const [showAddUserModal, setShowAddUserModal] = useState(false);
   const { data: usersBoard } = useQuery(["users"], () => fetchUsersByBoard(boardId));
   const { data: roles = [] } = useQuery(["roles"], () => getRoles(boardId));
@@ -58,7 +63,7 @@ const Users = () => {
       message.error("Произошла ошибка при удалении пользователя.");
     }
   };
-
+  console.log(user)
   // const handleInviteUser = async (values) => {
   //   try {
   //     await addUserInBoard(values.userId, boardId); // Здесь предполагается, что values содержит userId и boardId
@@ -70,11 +75,13 @@ const Users = () => {
   //   }
   // };
   const handleSendInvite = async (values) => {
-    try {
+    console.log(values.email, user?.email);
+    if (values.email === user.email) {
+      message.error("Нельзя отправить приглашение самому себе!");
+      return;
+    } else {
       await createNotification(values.email, userId, boardId, "Приглашение", "Приглашение на доску"); // Здесь предполагается, что values содержит userId и boardId
       message.success("Приглашение отправлено!");
-    } catch (error) {
-      message.error(`Произошла ошибка при отправке приглашения.`);
     }
   };
 
