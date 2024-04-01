@@ -1,4 +1,4 @@
-import { Avatar, Button, Card, Flex, Layout, List, Menu, Switch, Tabs, Typography, message, notification } from "antd";
+import { Alert, Avatar, Button, Card, Flex, Layout, List, Menu, Space, Switch, Tabs, Typography, message, notification } from "antd";
 import React, { useEffect, useState } from "react";
 import Navbar from "../../Components/BoardHeader/Navbar/Navbar";
 import { useQuery, useQueryClient } from "react-query";
@@ -85,25 +85,45 @@ const UserProfile = () => {
               </div>
             </div>
             <List
-              bordered
               dataSource={notifications}
               renderItem={(item) => (
-                <List.Item>
-                  <List.Item.Meta title={item.title} description={item.message} />
-                  <Flex style={{ justifyContent: "space-between" }}>
-                    <Button
-                      type="text"
-                      style={{ color: "green", borderColor: "green" }}
-                      onClick={() => handleInviteUser(item.id, item.userId, item.boardId)}>
-                      Принять
-                    </Button>
-                    <Button style={{ marginLeft: "10px" }} danger onClick={() => handleDeleteInvite(item.id, item.userId)}>
-                      Отмена
-                    </Button>
-                  </Flex>
+                <div style={{ marginBottom: "10px" }}>
+                  {/* Add margin-bottom to create spacing */}
+                  <Alert
+                    message={item.title}
+                    description={`${item.message} от пользователя ${item.inviterLastName} ${item.inviterFirstName}  ${item.inviterMiddleName}`}
+                    type="info"
+                    action={
+                      <Space direction="vertical">
+                        <Button
+                          type="text"
+                          style={{ color: "green", borderColor: "green", width: "90px" }}
+                          onClick={() => handleInviteUser(item.id, item.userId, item.boardId)}>
+                          Принять
+                        </Button>
+                        <Button style={{ width: "90px" }} danger onClick={() => handleDeleteInvite(item.id, item.userId)}>
+                          Отмена
+                        </Button>
+                      </Space>
+                    }
+                  />
+                </div>
+                // <List.Item>
+                //   <List.Item.Meta title={item.title} description={item.message} />
+                //   <Flex style={{ justifyContent: "space-between" }}>
+                // <Button
+                //   type="text"
+                //   style={{ color: "green", borderColor: "green" }}
+                //   onClick={() => handleInviteUser(item.id, item.userId, item.boardId)}>
+                //   Принять
+                // </Button>
+                // <Button style={{ marginLeft: "10px" }} danger onClick={() => handleDeleteInvite(item.id, item.userId)}>
+                //   Отмена
+                // </Button>
+                //   </Flex>
 
-                  {/* <p style={{ color: "#999" }}>{item.date}</p> */}
-                </List.Item>
+                //   {/* <p style={{ color: "#999" }}>{item.date}</p> */}
+                // </List.Item>
               )}
             />
           </div>

@@ -71,7 +71,7 @@ const Users = () => {
   // };
   const handleSendInvite = async (values) => {
     try {
-      await createNotification(values.email, boardId, "Приглашение", "Приглашение на доску"); // Здесь предполагается, что values содержит userId и boardId
+      await createNotification(values.email, userId, boardId, "Приглашение", "Приглашение на доску"); // Здесь предполагается, что values содержит userId и boardId
       message.success("Приглашение отправлено!");
     } catch (error) {
       message.error(`Произошла ошибка при отправке приглашения.`);

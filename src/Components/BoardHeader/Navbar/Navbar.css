@@ -1,7 +1,7 @@
 .profile-btn {
   height: 100%;
-  width: 125px;
-  padding: 10px 0;
+  minwidth: 125px;
+  padding: 10px 5px;
   background-color: #fff;
   border: none;
   cursor: pointer;

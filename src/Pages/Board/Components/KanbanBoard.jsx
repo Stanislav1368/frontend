@@ -109,6 +109,7 @@ const KanbanBoard = ({ columns, updateColumns, boardId, userId, users, prioritie
           return column;
         });
       });
+      form.resetFields();
     } catch (error) {
       console.error(error);
     }
@@ -175,7 +176,7 @@ const KanbanBoard = ({ columns, updateColumns, boardId, userId, users, prioritie
               })}
         </div>
       </DragDropContext>
-      <Modal title={`Добавление задачи`} open={openAddTaskModal} onCancel={() => setOpenAddTaskModal(false)} footer={null}>
+      <Modal title={`Добавление задачи`} open={openAddTaskModal} onCancel={() => {setOpenAddTaskModal(false); form.resetFields();}} footer={null}>
         <Form form={form} onFinish={handleAddTask} layout="vertical">
           <Form.Item label="Заголовок" name="title" rules={[{ required: true, message: "Please enter title" }]}>
             <Input />

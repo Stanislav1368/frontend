@@ -1,8 +1,8 @@
-import { Button, Dropdown, Flex, Typography, notification } from "antd";
+import { Avatar, Badge, Button, Dropdown, Flex, Typography, notification } from "antd";
 import { Header } from "antd/es/layout/layout";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useQuery, useQueryClient } from "react-query";
-import SocketApi, { fetchUser } from "../../../api";
+import SocketApi, { fetchUser, getNotifications } from "../../../api";
 import "./Navbar.css";
 import { ArrowBack } from "@mui/icons-material";
 import { LogoutOutlined, ProfileOutlined, UserOutlined } from "@ant-design/icons";
@@ -31,24 +31,34 @@ const items = [
 ];
 const Navbar = ({ backArrow }) => {
   const { data: user, isLoading: isUserLoading } = useQuery("user", fetchUser);
+  const { data: notifications, isLoading: notificationsLoading } = useQuery(["notifications"], () => getNotifications(user.id), {
+    enabled: !!user?.id,
+    refetchOnWindowFocus: false,
+    keepPreviousData: true,
+  });
 
   const queryClient = useQueryClient();
   useEffect(() => {
     SocketApi.createConnection();
     SocketApi.socket.on("sendInvite", async (userId) => {
-      console.log(user.id == userId);
+      console.log(user?.id === userId);
       if (user?.id === userId) {
-
         notification.open({
           message: "Приглашение",
           description: "Приглашение на доску",
         });
+
         queryClient.invalidateQueries(["notifications"]);
       }
     });
 
     return () => {};
   }, []);
+
+  if (notificationsLoading) {
+    return <>loading</>;
+  }
+
   return (
     <Header
       style={{
@@ -86,7 +96,12 @@ const Navbar = ({ backArrow }) => {
       <Flex style={{ height: "100%" }}>
         <Dropdown menu={{ items }}>
           <button className="profile-btn">
-            {user?.firstName} {user?.lastName}
+            <Badge count={notifications ? notifications.length : 0}>
+              <Avatar size={32} icon={<UserOutlined />} />
+            </Badge>
+            <span style={{ marginLeft: "10px" }}>
+              {user?.firstName} {user?.lastName}
+            </span>
           </button>
         </Dropdown>
       </Flex>

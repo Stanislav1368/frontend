@@ -83,8 +83,8 @@ export async function deleteBoard(userId, boardId) {
 export async function taskChangeArchivingStatus(userId, boardId, stateId, taskId, isArchived) {
   await axios.put(`${BASE_URL}/users/${userId}/boards/${boardId}/states/${stateId}/tasks/${taskId}/archive`, { isArchived: isArchived });
 }
-export async function updateTask(userId, boardId, stateId, taskId, newState) {
-  await axios.put(`${BASE_URL}/users/${userId}/boards/${boardId}/states/${stateId}/tasks/${taskId}`, { newStateId: newState });
+export async function updateTask(userId, boardId, stateId, taskId, updatedData) {
+  await axios.put(`${BASE_URL}/users/${userId}/boards/${boardId}/states/${stateId}/tasks/${taskId}`, updatedData);
 }
 export async function updateTaskIsCompleted(userId, boardId, stateId, taskId, updatedIsCompleted) {
   await axios.put(`${BASE_URL}/users/${userId}/boards/${boardId}/states/${stateId}/tasks/${taskId}/isCompleted`, updatedIsCompleted);
@@ -245,12 +245,12 @@ export const getNotifications = async (userId) => {
   return response.data;
 };
 
-export const createNotification = async (email, boardId, title, message) => {
+export const createNotification = async (email, fromUserId, boardId, title, message) => {
   try {
     const user = await fetchUserByEmail(email);
     const userId = user.id;
 
-    const response = await axios.post(`${BASE_URL}/users/${userId}/notifications`, { title, message, userId, boardId });
+    const response = await axios.post(`${BASE_URL}/users/${userId}/notifications`, { title, message, userId, boardId, fromUserId });
 
     return response.data;
   } catch (error) {

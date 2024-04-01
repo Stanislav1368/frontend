@@ -60,7 +60,7 @@ const Board = () => {
       values.color = hexString;
 
       CreatePriorityMutation.mutate(values);
-      setOpenAddPriorityModal(false);
+      // setOpenAddPriorityModal(false);
     } catch (error) {
       console.error(error);
     }

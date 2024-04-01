@@ -1,40 +1,38 @@
 import { CalendarOutlined, CheckCircleOutlined, ExclamationCircleOutlined, UserOutlined } from "@ant-design/icons";
 import { Archive, ArchiveOutlined, Delete, DeleteOutline, DeleteOutlineOutlined } from "@mui/icons-material";
-import { Avatar, Badge, Button, Card, Checkbox, DatePicker, Descriptions, Divider, Drawer, Flex, Input, List, Modal, Tag } from "antd";
+import { Avatar, Badge, Button, Card, Checkbox, DatePicker, Descriptions, Divider, Drawer, Flex, Form, Input, List, Modal, Tag } from "antd";
 import moment from "moment";
 import React, { useState } from "react";
 import Comments from "../../../Components/Comments";
-import { getRoleByBoardId, taskChangeArchivingStatus, updateTaskIsCompleted } from "../../../api";
+import { getRoleByBoardId, taskChangeArchivingStatus, updateTask, updateTaskIsCompleted } from "../../../api";
 import { useQuery, useQueryClient } from "react-query";
+import dayjs from "dayjs";
 
 const TaskCard = ({ task, isDragging, deleteTask, userId, boardId }) => {
+  const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
-  const [title, setTitle] = useState(task?.title || "");
-  const [description, setDescription] = useState(task?.description || "");
-  const [userIds, setUserIds] = useState(task?.userIds || []);
-  const [priorityId, setPriorityId] = useState(task?.priorityId || null);
+  const [form] = Form.useForm();
+  const [title, setTitle] = useState(task.title);
+  const [description, setDescription] = useState(task.description);
   console.log(task);
-  const [startDate, setStartDate] = useState(task?.startDate || null);
-  const [endDate, setEndDate] = useState(task?.endDate || null);
-  console.log(startDate);
-  const handleUpdateTask = async () => {
-    try {
-      const updateData = {
-        title: title,
-        description: description,
-        userIds: userIds,
-        priorityId: priorityId,
-        dates: [startDate, endDate],
-      };
+  const [userIds, setUserIds] = useState(task?.userIds || []);
+  const [priorityId, setPriorityId] = useState(task.priorityId);
+  console.log(task);
+  const [startDate, setStartDate] = useState(task.startDate);
+  const [endDate, setEndDate] = useState(task.endDate);
+  const [test, setTest] = useState("Test");
 
-      await updateTask(userId, boardId, taskId, updateData);
-      // Обновите состояние задачи после успешного обновления
-      // Например, вызовите функцию для загрузки обновленных данных задачи
+  const handleUpdateTask = async (values) => {
+    console.log(values);
+    try {
+      await updateTask(userId, boardId, task.stateId, task.id, values);
+      queryClient.invalidateQueries(["columns"]);
+      form.resetFields(); // Сбросить значения полей формы
     } catch (error) {
       console.error("Ошибка при обновлении задачи", error);
     }
   };
-  const queryClient = useQueryClient();
+
   const showDrawer = () => {
     setOpen(true);
   };
@@ -56,14 +54,19 @@ const TaskCard = ({ task, isDragging, deleteTask, userId, boardId }) => {
     Modal.confirm({
       title: "Изменение задачи",
       content: (
-        <>
-          <Input required value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Название задачи" />
-          <Input.TextArea required value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Описание задачи" />
-          <DatePicker value={"10/10/2020"} onChange={(date) => setStartDate(date)} />
-          <DatePicker value={endDate} onChange={(date) => setEndDate(date)} />
-        </>
+        <Form form={form} onFinish={handleUpdateTask} initialValues={task}>
+          <Form.Item name="title" rules={[{ required: true, message: "Пожалуйста, введите название задачи" }]}>
+            <Input placeholder="Название задачи" />
+          </Form.Item>
+          <Form.Item name="description">
+            <Input.TextArea placeholder="Описание задачи" />
+          </Form.Item>
+          <Form.Item name="dates">
+            <DatePicker.RangePicker format="YYYY-MM-DD" />
+          </Form.Item>
+        </Form>
       ),
-      onOk: () => handleUpdateTask(),
+      onOk: () => form.submit(),
       cancelText: "Отмена",
     });
   };
@@ -118,8 +121,8 @@ const TaskCard = ({ task, isDragging, deleteTask, userId, boardId }) => {
             onClick={showDrawer} // Добавляем проверку, чтобы не открывать задачу при завершенной задаче
           >
             <div>
-              {task?.startDate && <p>Начало: {moment(task?.startDate).locale("ru").format("DD MM YYYY, HH:mm:ss")}</p>}
-              {task?.endDate && <p>Конец: {moment(task?.endDate).locale("ru").format("DD MM YYYY, HH:mm:ss")}</p>}
+              {task?.startDate && <p>Начало: {moment(task?.startDate).locale("ru").format("DD.MM.YYYY")}</p>}
+              {task?.endDate && <p>Конец: {moment(task?.endDate).locale("ru").format("DD.MM.YYYY")}</p>}
             </div>
             {task?.users && task?.users.length > 0 && (
               <>
@@ -161,8 +164,8 @@ const TaskCard = ({ task, isDragging, deleteTask, userId, boardId }) => {
           }}
           onClick={showDrawer}>
           <div>
-            {task?.startDate && <p>Начало: {moment(task?.startDate).locale("ru").format("DD MM YYYY, HH:mm:ss")}</p>}
-            {task?.endDate && <p>Конец: {moment(task?.endDate).locale("ru").format("DD MM YYYY, HH:mm:ss")}</p>}
+            {task?.startDate && <p>Начало: {moment(task?.startDate).locale("ru").format("DD.MM.YYYY")}</p>}
+            {task?.endDate && <p>Конец: {moment(task?.endDate).locale("ru").format("DD.MM.YYYY")}</p>}
           </div>
 
           {task?.users && task?.users.length > 0 && (
@@ -206,8 +209,8 @@ const TaskCard = ({ task, isDragging, deleteTask, userId, boardId }) => {
         </Divider>
         {task?.startDate && task?.startDate && (
           <p>
-            <CalendarOutlined /> {moment(task?.startDate).locale("ru").format("DD MM YYYY, HH:mm:ss")} -{" "}
-            {moment(task?.endDate).locale("ru").format("DD MM YYYY, HH:mm:ss")}
+            <CalendarOutlined /> {moment(task?.startDate).locale("ru").format("DD.MM.YYYY")} -{" "}
+            {moment(task?.endDate).locale("ru").format("DD.MM.YYYY")}
           </p>
         )}
 

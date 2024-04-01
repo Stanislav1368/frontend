@@ -1,7 +1,8 @@
 import React from "react";
-import { Button, Card, Empty, Row, Col, Layout, Flex } from "antd";
+import { Button, Card, Empty, Row, Col, Layout, Flex, Checkbox } from "antd";
 import { useQuery, useQueryClient } from "react-query";
 import { fetchUserId, getCurrentRole, getIsArchivedTasks, getRoleByBoardId, taskChangeArchivingStatus } from "../../api";
+import moment from "moment";
 
 const Archive = ({ boardId }) => {
   const queryClient = useQueryClient();
@@ -47,29 +48,49 @@ const Archive = ({ boardId }) => {
         <div style={{ display: "flex", flexWrap: "wrap" }}>
           {isArchivedTasks.map((task) => (
             <Card
+              bordered
               title={
-                <Flex style={{ justifyContent: "space-between" }}>
-                  {task.title}
-                  {(currentRole?.canCreateRole || isOwner) && (
-                    <Button
-                      type="primary"
-                      onClick={async () => {
-                        await taskChangeArchivingStatus(userId, boardId, task.stateId, task.id, false);
-                        await queryClient.invalidateQueries(["isArchivedTasks"]);
-                        await queryClient.invalidateQueries(["columns"]);
-                      }}>
-                      Восстановить
-                    </Button>
-                  )}
-                </Flex>
+                <>
+                  <Checkbox className="checkbox" type="checkbox" checked={task?.isCompleted} />
+                  {task?.title}
+                </>
               }
-              bordered={false}
               style={{
-                flex: "0 0 calc(25% - 20px)",
+                width: "220px",
+                flex: "calc(25% - 20px)",
                 margin: "10px",
-                minWidth: "220px",
+                maxWidth: "250px",
+                transition: "background-color 0.2s, box-shadow 0.2s",
+                backgroundColor: !task?.isCompleted ? "#ffffff" : "#f3f3f3", // Меняем цвет фона, чтобы выделить что задача завершена
+                opacity: task?.isCompleted ? 0.6 : 1, // Уменьшаем немного прозрачность для дизейбленной карточки
               }}>
-              <span>{task.description}</span>
+              <div>
+                {task?.startDate && <p>Начало: {moment(task?.startDate).locale("ru").format("DD.MM.YYYY")}</p>}
+                {task?.endDate && <p>Конец: {moment(task?.endDate).locale("ru").format("DD.MM.YYYY")}</p>}
+              </div>
+              {task?.users && task?.users.length > 0 && (
+                <>
+                  <Divider>Ответственные</Divider>
+                  <div style={{ display: "flex" }}>
+                    {task.users.map((user, index) => (
+                      <Avatar key={user.id} style={{ backgroundColor: `${stringToColor(user.firstName)}` }}>
+                        {user.firstName}
+                      </Avatar>
+                    ))}
+                  </div>
+                </>
+              )}
+              {(currentRole?.canAccessArchive || isOwner) && (
+                <Button
+                  type="primary"
+                  onClick={async () => {
+                    await taskChangeArchivingStatus(userId, boardId, task.stateId, task.id, false);
+                    await queryClient.invalidateQueries(["isArchivedTasks"]);
+                    await queryClient.invalidateQueries(["columns"]);
+                  }}>
+                  Восстановить
+                </Button>
+              )}
             </Card>
           ))}
         </div>
