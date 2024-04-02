@@ -67,7 +67,11 @@ const RoleCard = ({ role }) => {
               <Flex style={{ alignItems: "center", justifyContent: "space-between" }}>
                 {role.name}
                 {(currentRole?.canCreateRole || isOwner) && !isGuestRole && (
-                  <Button danger onClick={(e) => {handleDeleteRole(role.id), e.stopPropagation()}}>
+                  <Button
+                    danger
+                    onClick={(e) => {
+                      handleDeleteRole(role.id), e.stopPropagation();
+                    }}>
                     Удалить
                   </Button>
                 )}
@@ -78,7 +82,17 @@ const RoleCard = ({ role }) => {
                 <div style={{ display: "flex", justifyContent: "space-between" }}>
                   <Typography.Text strong>{right.title}:</Typography.Text>
                   <Tag style={{ width: "35px", display: "flex", justifyContent: "center" }} color={role[right.key] ? "success" : "error"}>
-                    <Checkbox checked={role[right.key]} onChange={handleCheckboxChange(right)} disabled={isGuestRole}></Checkbox>
+                    {isGuestRole ? (
+                      <>
+                        <Checkbox checked={role[right.key]} onChange={handleCheckboxChange(right)} disabled={true}></Checkbox>
+                      </>
+                    ) : (
+                      <>
+                        <Checkbox checked={role[right.key]} onChange={handleCheckboxChange(right)} disabled={!currentRole?.canEditRole && !isOwner}>
+                          {console.log(!currentRole?.canEditRole || !isOwner)}
+                        </Checkbox>
+                      </>
+                    )}
                   </Tag>
                 </div>
                 <Divider style={{ height: "0px", margin: "5px 0px 5px 0px" }}></Divider>

@@ -4,7 +4,7 @@ import { Avatar, Badge, Button, Card, Checkbox, DatePicker, Descriptions, Divide
 import moment from "moment";
 import React, { useState } from "react";
 import Comments from "../../../Components/Comments";
-import { getRoleByBoardId, taskChangeArchivingStatus, updateTask, updateTaskIsCompleted } from "../../../api";
+import { getCurrentRole, getRoleByBoardId, taskChangeArchivingStatus, updateTask, updateTaskIsCompleted } from "../../../api";
 import { useQuery, useQueryClient } from "react-query";
 import dayjs from "dayjs";
 
@@ -21,6 +21,12 @@ const TaskCard = ({ task, isDragging, deleteTask, userId, boardId }) => {
   const [startDate, setStartDate] = useState(task.startDate);
   const [endDate, setEndDate] = useState(task.endDate);
   const [test, setTest] = useState("Test");
+
+  const { data: currentRole, isLoading: currentRoleLoading } = useQuery("currentRole", () => getCurrentRole(userId, boardId), {
+    enabled: !!userId,
+    refetchOnWindowFocus: false,
+    keepPreviousData: true,
+  });
 
   const handleUpdateTask = async (values) => {
     console.log(values);
@@ -255,7 +261,7 @@ const TaskCard = ({ task, isDragging, deleteTask, userId, boardId }) => {
         </div>
         <Divider /> */}
         <Comments userId={userId} boardId={boardId} stateId={task.stateId} taskId={task.id}></Comments>
-        <Button onClick={showUpdateConfirm}>Изменить задачу</Button>
+        {(isOwner || currentRole?.canAddTasks) && <Button onClick={showUpdateConfirm}>Изменить задачу</Button>}
       </Drawer>
       {/* <Drawer
         width={640}
