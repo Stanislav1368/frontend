@@ -17,10 +17,17 @@ const RegistrationPage = () => {
   const handleRegistration = async ({ confirmPassword, ...values }) => {
     try {
       setLoading(true);
-      await mutation.mutateAsync(values);
+    
+      const a = await registration(values);
+    
+      navigate("/login");
     } catch (error) {
-      console.error(error);
-      message.error(error);
+      console.error(error.message);
+      if (error.message === "Request failed with status code 400") {
+        message.error("Пользователь с таким email уже существует");
+      } else {
+        message.error("Что-то пошло не так. Пожалуйста, попробуйте еще раз.");
+      }
     } finally {
       setLoading(false);
     }
@@ -46,7 +53,7 @@ const RegistrationPage = () => {
               { required: true, message: "Пожалуйста, введите почту!" },
               {
                 type: "email",
-                message: "Пожалуйста, введите корректный адрес почты!",
+                message: "Некорректный адрес почты!",
               },
             ]}>
             <Input prefix={<MailOutlined />} placeholder="Почта" />

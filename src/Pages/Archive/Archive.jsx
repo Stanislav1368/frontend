@@ -30,7 +30,7 @@ const Archive = ({ boardId }) => {
   if (ownerLoading || currentRoleLoading) {
     return <>Loading</>;
   }
-  console.log(isArchivedTasks);
+
   return (
     <Layout style={{ height: "100%", margin: "0px" }}>
       {isArchivedTasks.length === 0 ? (

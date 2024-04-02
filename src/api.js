@@ -1,7 +1,7 @@
 import axios from "axios";
 import io from "socket.io-client";
-const BASE_URL = "http://31.129.97.240:5000"; // Базовый URL API
-// const BASE_URL = "http://localhost:5000"; // Базовый URL API
+// const BASE_URL = "http://31.129.97.240:5000"; // Базовый URL API
+const BASE_URL = "http://localhost:5000"; // Базовый URL API
 
 export default class SocketApi {
   static socket;
@@ -178,7 +178,7 @@ export async function createRole(data, boardId) {
 }
 
 export async function deleteRole(boardId, roleId) {
-  console.log(boardId, roleId);
+
   await axios.delete(`${BASE_URL}/boards/${boardId}/roles/${roleId}`);
 }
 

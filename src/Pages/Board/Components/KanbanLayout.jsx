@@ -1,5 +1,5 @@
 import { DownOutlined, ExclamationCircleOutlined, UserOutlined } from "@ant-design/icons";
-import { Alert, Avatar, Button, Dropdown, Flex, Layout, Menu, Modal, Typography, message } from "antd";
+import { Alert, Avatar, Button, Divider, Dropdown, Flex, Layout, Menu, Modal, Typography, message } from "antd";
 import { Content, Header } from "antd/es/layout/layout";
 import Title from "antd/es/typography/Title";
 import React from "react";
@@ -99,7 +99,7 @@ const KanbanLayout = ({
           ))}
         </Avatar.Group>
       </Header>
-      <div style={{ display: "flex", padding: "0px 10px 10px 10px", gap: "5px", boxShadow: "0px 5px 5px -5px rgba(0,0,0,0.1)" }}>
+      <div style={{ display: "flex", padding: "0px 10px 10px 10px", gap: "5px" }}>
         {(currentRole?.canAddColumns || isOwner) && (
           <Button
             style={{ textAlign: "left", padding: "4px 10px" }}
@@ -119,6 +119,7 @@ const KanbanLayout = ({
           </Button>
         )}
       </div>
+      <Divider style={{ margin: "0px 0px" }}></Divider>
       <Content style={{ padding: 10, overflowY: "auto", height: "100%" }}>
         <KanbanBoard
           columns={columns}

@@ -41,7 +41,7 @@ const Navbar = ({ backArrow }) => {
   useEffect(() => {
     SocketApi.createConnection();
     SocketApi.socket.on("sendInvite", async (userId) => {
-      console.log(user?.id === userId);
+  
       if (user?.id === userId) {
         notification.open({
           message: "Приглашение",

@@ -16,7 +16,7 @@ const UserProfile = () => {
     refetchOnWindowFocus: false,
     keepPreviousData: true,
   });
-  console.log(user);
+
   const queryClient = useQueryClient();
   // const openNotification = (item) => {
   //   notification.open({

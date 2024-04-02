@@ -27,7 +27,7 @@ const Users = () => {
     keepPreviousData: true,
   });
   const [showAddUserModal, setShowAddUserModal] = useState(false);
-  const { data: usersBoard } = useQuery(["users"], () => fetchUsersByBoard(boardId));
+  const { data: usersBoard, loading: usersBoardLoading } = useQuery(["users"], () => fetchUsersByBoard(boardId));
   const { data: roles = [] } = useQuery(["roles"], () => getRoles(boardId));
   const queryClient = useQueryClient();
   const { data: currentRole, isLoading: currentRoleLoading } = useQuery("currentRole", () => getCurrentRole(userId, boardId), {
@@ -63,7 +63,7 @@ const Users = () => {
       message.error("Произошла ошибка при удалении пользователя.");
     }
   };
-  console.log(user)
+
   // const handleInviteUser = async (values) => {
   //   try {
   //     await addUserInBoard(values.userId, boardId); // Здесь предполагается, что values содержит userId и boardId
@@ -75,7 +75,7 @@ const Users = () => {
   //   }
   // };
   const handleSendInvite = async (values) => {
-    console.log(values.email, user?.email);
+  
     if (values.email === user.email) {
       message.error("Нельзя отправить приглашение самому себе!");
       return;

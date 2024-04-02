@@ -13,7 +13,7 @@ const GanttChart = ({ data }) => {
     const startDate = moment(task.startDate);
     const endDate = task.endDate ? moment(task.endDate) : startDate;
     let currentDate = moment(startDate);
-    console.log(task.startDate);
+   
     while (currentDate <= endDate) {
       dates.push(currentDate.format("YYYY-MM-DD"));
       currentDate.add(1, "days");

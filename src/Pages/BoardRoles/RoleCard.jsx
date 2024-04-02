@@ -45,7 +45,7 @@ const RoleCard = ({ role }) => {
     };
   };
   const handleDeleteRole = async (roleId) => {
-    console.log(roleId);
+   
     try {
       await deleteRole(boardId, roleId);
       queryClient.invalidateQueries(["roles"]);

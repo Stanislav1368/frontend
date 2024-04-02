@@ -103,7 +103,7 @@ const KanbanBoard = ({ columns, updateColumns, boardId, userId, users, prioritie
   };
   const handleAddTask = async (values) => {
     setOpenAddTaskModal(false);
-    console.log(values);
+
     try {
       const addedTask = await addTask(values, userId, boardId, selectedColumnId);
 
@@ -320,7 +320,7 @@ const ColumnHeader = ({ column, handleOpenTaskModal, userId, boardId, editingCol
                   okType: "danger",
                   content: "Это действие нельзя отменить.",
                   onOk: async () => {
-                    console.log(userId, boardId, column?.id);
+             
                     await deleteState(userId, boardId, column?.id);
                     queryClient.invalidateQueries("columns");
                   },
