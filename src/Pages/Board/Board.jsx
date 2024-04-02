@@ -251,12 +251,12 @@ const Board = () => {
           <div
             style={{
               display: "grid",
-              gridTemplateColumns: "repeat(auto-fill, minmax(200px, 1fr))",
+              gridTemplateColumns: "repeat(auto-fill, minmax(100px, 1fr))",
               gridGap: "10px",
               margin: "10px 0",
             }}>
             {priorities?.map((priority) => (
-              <Tag key={`${priority?.id}`} color={`${priority?.color}`} style={{ width: "200px" }}>
+              <Tag key={`${priority?.id}`} color={`${priority?.color}`}>
                 {`${priority?.name}`}
               </Tag>
             ))}

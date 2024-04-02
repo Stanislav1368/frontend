@@ -14,16 +14,16 @@ const TaskCard = ({ task, isDragging, deleteTask, userId, boardId }) => {
   const [form] = Form.useForm();
   const [title, setTitle] = useState(task.title);
   const [description, setDescription] = useState(task.description);
-
+  console.log(task);
   const [userIds, setUserIds] = useState(task?.userIds || []);
   const [priorityId, setPriorityId] = useState(task.priorityId);
- 
+  console.log(task);
   const [startDate, setStartDate] = useState(task.startDate);
   const [endDate, setEndDate] = useState(task.endDate);
   const [test, setTest] = useState("Test");
 
   const handleUpdateTask = async (values) => {
-  
+    console.log(values);
     try {
       await updateTask(userId, boardId, task.stateId, task.id, values);
       queryClient.invalidateQueries(["columns"]);
@@ -280,7 +280,7 @@ const TaskCard = ({ task, isDragging, deleteTask, userId, boardId }) => {
             <li key={person.id}>{person.name}</li>
           ))}
         </ul>
-  
+        {console.log(task.endDate, new Date())}
         <p style={{ border: "1px dashed", padding: "5px" }}>Стартовая дата: {task.startDate}</p>
         <p style={{ border: "1px dashed", padding: "5px", backgroundColor: new Date(task.endDate) < new Date() ? "red" : "transparent" }}>
           Конечная дата: {task.endDate}

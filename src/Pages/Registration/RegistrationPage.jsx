@@ -17,9 +17,9 @@ const RegistrationPage = () => {
   const handleRegistration = async ({ confirmPassword, ...values }) => {
     try {
       setLoading(true);
-    
+
       const a = await registration(values);
-    
+
       navigate("/login");
     } catch (error) {
       console.error(error.message);
