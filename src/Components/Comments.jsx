@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 
 import { useQuery, useQueryClient } from "react-query";
 import SocketApi, { commentTask, getCommentsTask } from "../api";
-import { Avatar, Button, Form, Input, List } from "antd";
+import { Avatar, Button, Form, Input, List, Divider } from "antd";
 
 const Comments = ({ userId, boardId, stateId, taskId }) => {
   const queryClient = useQueryClient();
@@ -12,7 +12,6 @@ const Comments = ({ userId, boardId, stateId, taskId }) => {
   });
 
   if (!isLoading) {
-  
   }
   useEffect(() => {
     SocketApi.createConnection();
@@ -25,6 +24,7 @@ const Comments = ({ userId, boardId, stateId, taskId }) => {
   }, []);
   return (
     <>
+      <Divider orientation="left">Комментарии</Divider>
       <List
         dataSource={comments}
         loading={isLoading}
@@ -83,7 +83,7 @@ const FormComment = ({ userId, boardId, stateId, taskId }) => {
       </Form.Item>
       {charCountWarning && <p style={{ color: "red" }}>Превышено допустимое количество символов (255)</p>}
       <Form.Item>
-        <Button type="primary" htmlType="submit">
+        <Button type="primary" htmlType="submit" style={{backgroundColor: "#519839"}}>
           Добавить комментарий
         </Button>
       </Form.Item>

@@ -1,7 +1,7 @@
 import axios from "axios";
 import io from "socket.io-client";
-const BASE_URL = "http://31.129.97.240:5000"; // Базовый URL API
-// const BASE_URL = "http://localhost:5000"; // Базовый URL API
+// const BASE_URL = "http://31.129.97.240:5000"; // Базовый URL API
+const BASE_URL = "http://localhost:5000"; // Базовый URL API
 
 export default class SocketApi {
   static socket;
@@ -57,7 +57,11 @@ export async function addState(data, userId, boardId) {
 
 export async function addTask(data, userId, boardId, stateId) {
   const response = await axios.post(`${BASE_URL}/users/${userId}/boards/${boardId}/states/${stateId}/tasks`, data);
-
+  return response.data;
+}
+export async function addSubTask(userId, boardId, stateId, taskId, data) {
+  console.log(data);
+  const response = await axios.post(`${BASE_URL}/users/${userId}/boards/${boardId}/states/${stateId}/tasks/${taskId}/subtasks`, data);
   return response.data;
 }
 export async function commentTask(data, userId, boardId, stateId, taskId) {
@@ -89,6 +93,13 @@ export async function updateTask(userId, boardId, stateId, taskId, updatedData) 
 export async function updateTaskIsCompleted(userId, boardId, stateId, taskId, updatedIsCompleted) {
   await axios.put(`${BASE_URL}/users/${userId}/boards/${boardId}/states/${stateId}/tasks/${taskId}/isCompleted`, updatedIsCompleted);
 }
+export async function updateSubTaskIsCompleted(userId, boardId, stateId, taskId, subTaskId, updatedIsCompleted) {
+  console.log(userId, boardId, stateId, taskId, subTaskId, updatedIsCompleted);
+  await axios.put(
+    `${BASE_URL}/users/${userId}/boards/${boardId}/states/${stateId}/tasks/${taskId}/subtasks/${subTaskId}/isCompleted`,
+    updatedIsCompleted
+  );
+}
 
 export async function updateTaskTitle(userId, boardId, stateId, taskId, data) {
   await axios.put(`${BASE_URL}/users/${userId}/boards/${boardId}/states/${stateId}/tasks/${taskId}`, { newStateId: newState, newOrder: newOrderNum });
@@ -109,9 +120,14 @@ export const fetchBoardById = async (userId, boardId) => {
 
 export const fetchStates = async (userId, boardId) => {
   const response = await axios.get(`${BASE_URL}/users/${userId}/boards/${boardId}/states`);
-
   return response.data.sort((a, b) => a.id - b.id);
 };
+
+export const getSubTasks = async (userId, boardId, stateId, taskId) => {
+  const response = await axios.get(`${BASE_URL}/users/${userId}/boards/${boardId}/states/${stateId}/tasks/${taskId}/subtasks`);
+  return response.data.sort((a, b) => a.id - b.id);
+};
+
 export const getIsArchivedTasks = async (userId, boardId) => {
   const response = await axios.get(`${BASE_URL}/users/${userId}/boards/${boardId}/tasks`);
   return response.data;
@@ -240,16 +256,20 @@ export const fetchUserByEmail = async (email) => {
 };
 
 export const getNotifications = async (userId) => {
-  const response = await axios.get(`${BASE_URL}/users/${userId}/notifications`);
+  const response = await axios.get(`${BASE_URL}/users/${userId}/notifications/inviteNotif`);
   return response.data;
 };
-
+export const getNotificationsForBoard = async (userId, boardId) => {
+  console.log({ boardId });
+  const response = await axios.get(`${BASE_URL}/users/${userId}/notifications`, { params: { boardId } });
+  return response.data;
+};
 export const createNotification = async (email, fromUserId, boardId, title, message) => {
   try {
     const user = await fetchUserByEmail(email);
     const userId = user.id;
 
-    const response = await axios.post(`${BASE_URL}/users/${userId}/notifications`, { title, message, userId, boardId, fromUserId });
+    const response = await axios.post(`${BASE_URL}/users/${userId}/notifications/inviteNotif`, { title, message, userId, boardId, fromUserId });
 
     return response.data;
   } catch (error) {
@@ -257,10 +277,18 @@ export const createNotification = async (email, fromUserId, boardId, title, mess
     throw error;
   }
 };
-
+export const createNotificationForBoard = async (title, message, userId, boardId, fromUserId) => {
+  try {
+    const response = await axios.post(`${BASE_URL}/users/${userId}/notifications`, { title, message, userId, boardId, fromUserId });
+    return response.data;
+  } catch (error) {
+    console.error(`Error deleting notification: ${error.message}`);
+    throw error;
+  }
+};
 export const deleteNotification = async (userId, notificationId) => {
   try {
-    const response = await axios.delete(`${BASE_URL}/users/${userId}/notifications/${notificationId}`);
+    const response = await axios.delete(`${BASE_URL}/users/${userId}/notifications/inviteNotif/${notificationId}`);
     return response.data;
   } catch (error) {
     console.error(`Error deleting notification: ${error.message}`);

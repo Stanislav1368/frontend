@@ -65,7 +65,7 @@ const UserProfile = () => {
   return (
     <>
       <Layout style={{ height: "100vh" }}>
-        <Navbar backArrow={true} />
+        <Navbar backArrow={true} user={user}/>
         <Content style={{ padding: "0 5%", maxWidth: "1200px" }}>
           <div>
             <div style={{ display: "flex", alignItems: "center", marginBottom: "20px" }}>

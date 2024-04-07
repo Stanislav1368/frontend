@@ -10,9 +10,10 @@ import "moment/locale/ru"; // Импортируйте локаль, если н
 
 import ruRU from "antd/lib/locale/ru_RU"; // Используйте свою локаль
 import { ConfigProvider } from "antd";
+import SocketApi from "./api.js";
 
 const queryClient = new QueryClient();
-
+SocketApi.createConnection();
 ReactDOM.createRoot(document.getElementById("root")).render(
   <ConfigProvider locale={ruRU}>
     <QueryClientProvider client={queryClient}>

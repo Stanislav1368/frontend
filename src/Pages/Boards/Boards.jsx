@@ -47,7 +47,7 @@ const Boards = () => {
   return (
     <>
       <Layout style={{ height: "100vh" }}>
-        <Navbar backArrow={false}></Navbar>
+        <Navbar backArrow={false} user={user}></Navbar>
         {/* <Header
           style={{
             backgroundColor: "#fff",

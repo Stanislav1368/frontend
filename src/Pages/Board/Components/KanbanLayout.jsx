@@ -1,12 +1,13 @@
 import { DownOutlined, ExclamationCircleOutlined, UserOutlined } from "@ant-design/icons";
-import { Alert, Avatar, Button, Divider, Dropdown, Flex, Layout, Menu, Modal, Typography, message } from "antd";
+import { Alert, Avatar, Button, Divider, Dropdown, Flex, Layout, Menu, Modal, Typography, message, List } from "antd";
 import { Content, Header } from "antd/es/layout/layout";
 import Title from "antd/es/typography/Title";
 import React from "react";
 import KanbanBoard from "./KanbanBoard";
 import { useMutation, useQuery, useQueryClient } from "react-query";
-import { deleteBoard, deleteUserFromBoard, getCurrentRole, getRoleByBoardId } from "../../../api";
-import { MoreVert } from "@mui/icons-material";
+import { deleteBoard, deleteUserFromBoard, getCurrentRole, getNotificationsForBoard, getRoleByBoardId } from "../../../api";
+import { MoreVert, NotificationsOutlined } from "@mui/icons-material";
+import moment from "moment";
 
 const KanbanLayout = ({
   board,
@@ -39,6 +40,19 @@ const KanbanLayout = ({
     refetchOnWindowFocus: false,
     keepPreviousData: true,
   });
+  const { data: notifications, isLoading: notificationsLoading } = useQuery(
+    ["notificationsForBoard"],
+    () => getNotificationsForBoard(userId, boardId),
+    {
+      enabled: !!userId,
+      refetchOnWindowFocus: false,
+      keepPreviousData: true,
+    }
+  );
+  console.log(notifications);
+
+  const filteredNotifications = notifications?.filter((notification) => notification.boardId == boardId && notification.title === "Задача завершена");
+  console.log(filteredNotifications);
   const showDeleteConfirm = () => {
     Modal.confirm({
       title: "Вы уверены, что хотите удалить доску?",
@@ -60,6 +74,20 @@ const KanbanLayout = ({
   if (currentRole === undefined) {
     return <></>;
   }
+  const menu = (
+    <Menu>
+      <List
+        dataSource={filteredNotifications}
+        renderItem={(notification) => (
+          <List.Item key={notification.id}>
+            <Typography.Text>{notification.message}</Typography.Text>
+            <br />
+            <Typography.Text>{moment(notification.createdAt).format("DD.MM.YYYY, HH:mm:ss")}</Typography.Text>
+          </List.Item>
+        )}
+      />
+    </Menu>
+  );
   return (
     <Layout style={{ height: "100%" }}>
       <Header
@@ -91,13 +119,20 @@ const KanbanLayout = ({
           </Dropdown>
         </div>
 
-        <Avatar.Group maxCount={2} size="large">
-          {usersBoard?.map((user) => (
-            <Avatar key={user.id} style={{ backgroundColor: `${stringToColor(user.firstName)}` }} size={36}>
-              {user.firstName}
-            </Avatar>
-          ))}
-        </Avatar.Group>
+        <Flex style={{ alignItems: "center", gap: "10px" }}>
+          <Avatar.Group maxCount={2} size="large">
+            {usersBoard?.map((user) => (
+              <Avatar key={user.id} style={{ backgroundColor: `${stringToColor(user.firstName)}` }} size={36}>
+                {user.firstName}
+              </Avatar>
+            ))}
+          </Avatar.Group>
+          <Dropdown overlay={menu}>
+            <Button type="primary">
+              <NotificationsOutlined style={{ cursor: "pointer" }} onClick={(e) => e.preventDefault()} />
+            </Button>
+          </Dropdown>
+        </Flex>
       </Header>
       <div style={{ display: "flex", padding: "0px 10px 10px 10px", gap: "5px" }}>
         {(currentRole?.canAddColumns || isOwner) && (

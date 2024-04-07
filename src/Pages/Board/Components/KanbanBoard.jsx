@@ -192,10 +192,10 @@ const KanbanBoard = ({ columns, updateColumns, boardId, userId, users, prioritie
         }}
         footer={null}>
         <Form form={form} onFinish={handleAddTask} layout="vertical">
-          <Form.Item label="Заголовок" name="title" rules={[{ required: true, message: "Please enter title" }]}>
+          <Form.Item label="Заголовок" name="title" rules={[{ required: true, message: "Введите заголовок" }]}>
             <Input />
           </Form.Item>
-          <Form.Item label="Описание" name="description" rules={[{ required: true, message: "Please enter description" }]}>
+          <Form.Item label="Описание" name="description" rules={[{ required: true, message: "Введите описание" }]}>
             <Input />
           </Form.Item>
           <Form.Item label="Выберите даты" name="dates" rules={[{ required: true, message: "Пожалуйста, выберите даты" }]}>

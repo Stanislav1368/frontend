@@ -2,7 +2,7 @@ import { Avatar, Badge, Button, Dropdown, Flex, Typography, notification } from 
 import { Header } from "antd/es/layout/layout";
 import React, { useEffect, useState } from "react";
 import { useQuery, useQueryClient } from "react-query";
-import SocketApi, { fetchUser, getNotifications } from "../../../api";
+import SocketApi, { fetchUser, fetchUserId, getNotifications } from "../../../api";
 import "./Navbar.css";
 import { ArrowBack } from "@mui/icons-material";
 import { LogoutOutlined, ProfileOutlined, UserOutlined } from "@ant-design/icons";
@@ -31,6 +31,7 @@ const items = [
 ];
 const Navbar = ({ backArrow }) => {
   const { data: user, isLoading: isUserLoading } = useQuery("user", fetchUser);
+
   const { data: notifications, isLoading: notificationsLoading } = useQuery(["notifications"], () => getNotifications(user.id), {
     enabled: !!user?.id,
     refetchOnWindowFocus: false,
@@ -39,21 +40,21 @@ const Navbar = ({ backArrow }) => {
 
   const queryClient = useQueryClient();
   useEffect(() => {
-    SocketApi.createConnection();
-    SocketApi.socket.on("sendInvite", async (userId) => {
-  
-      if (user?.id === userId) {
+    // SocketApi.createConnection();
+    SocketApi.socket.on("sendNotif", async (userId, title, message) => {
+      if (user?.id == userId) {
         notification.open({
-          message: "Приглашение",
-          description: "Приглашение на доску",
+          message: title,
+          description: message,
         });
 
         queryClient.invalidateQueries(["notifications"]);
       }
+      queryClient.invalidateQueries(["notifications"]);
     });
 
     return () => {};
-  }, []);
+  }, [user]);
 
   if (notificationsLoading) {
     return <>loading</>;

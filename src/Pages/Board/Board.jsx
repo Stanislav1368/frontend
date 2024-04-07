@@ -11,6 +11,7 @@ import SocketApi, {
   deleteState,
   fetchBoardById,
   fetchStates,
+  fetchUser,
   fetchUserId,
   fetchUsersByBoard,
   getCurrentRole,
@@ -20,7 +21,7 @@ import SocketApi, {
 } from "../../api";
 // import "../Boards/Boards.css";
 import { BrowserRouter, Link, Route, Router, Routes, useParams } from "react-router-dom";
-import { AccountTreeOutlined, Dashboard, RollerShades, SecurityOutlined, ViewKanbanOutlined } from "@mui/icons-material";
+import { AccountTreeOutlined, Dashboard, HistoryOutlined, RollerShades, SecurityOutlined, ViewKanbanOutlined } from "@mui/icons-material";
 import Archive from "../Archive/Archive";
 import GanttChart from "../GanttChart/GanttChart";
 import KanbanLayout from "./Components/KanbanLayout";
@@ -29,6 +30,7 @@ import Users from "../BoardUsers/Users";
 import Roles from "../BoardRoles/Roles";
 import { Content } from "antd/es/layout/layout";
 import { TeamOutlined, UserOutlined } from "@ant-design/icons";
+import History from "../History/History";
 
 const Board = () => {
   const queryClient = useQueryClient();
@@ -41,6 +43,7 @@ const Board = () => {
     refetchOnWindowFocus: false,
     keepPreviousData: true,
   });
+  const { data: user, isLoading: isUserLoading } = useQuery("user", fetchUser);
   const { data: currentRole, isLoading: currentRoleLoading } = useQuery("currentRole", () => getCurrentRole(userId, boardId), {
     enabled: !!userId,
     refetchOnWindowFocus: false,
@@ -65,7 +68,9 @@ const Board = () => {
       console.error(error);
     }
   };
-  const { data: columns } = useQuery(["columns", userId, board?.id], () => fetchStates(userId, board?.id));
+  const { data: columns } = useQuery(["columns", userId, board?.id], () => fetchStates(userId, boardId), {
+    enabled: !!userId,
+  });
 
   const [form] = Form.useForm();
 
@@ -87,8 +92,8 @@ const Board = () => {
     updateBoardWithColumns(userId, board?.id, newColumns); // Обновляем данные через API
   };
 
-  const { data: usersBoard } = useQuery(["users", board?.id], () => fetchUsersByBoard(board?.id));
-  const { data: priorities } = useQuery(["priorities", board?.id], () => getPriorities(board?.id));
+  const { data: usersBoard } = useQuery(["users", board?.id], () => fetchUsersByBoard(boardId));
+  const { data: priorities } = useQuery(["priorities", board?.id], () => getPriorities(boardId));
 
   const [openAddSectionModal, setOpenAddSectionModal] = useState(false);
   const [openAddUserModal, setOpenAddUserModal] = useState(false);
@@ -118,7 +123,7 @@ const Board = () => {
   return (
     <>
       <Layout style={{ height: "100vh" }}>
-        <Navbar backArrow={true} />
+        <Navbar backArrow={true} user={user} />
 
         <Layout>
           <Sider breakpoint="lg" collapsible collapsed={collapsed} onCollapse={onCollapse} theme="light">
@@ -126,6 +131,9 @@ const Board = () => {
             <Menu theme="light" mode="inline">
               <Menu.Item style={{ padding: "0px 16px 0px 16px" }} icon={<ViewKanbanOutlined style={{ fontSize: "18px" }} />}>
                 <Link to={`/boards/${boardId}/`}> Канбан доска</Link>
+              </Menu.Item>
+              <Menu.Item style={{ padding: "0px 16px 0px 16px" }} icon={<HistoryOutlined style={{ fontSize: "18px" }} />}>
+                <Link to={`/boards/${boardId}/history`}>История</Link>
               </Menu.Item>
               <Menu.Item style={{ padding: "0px 16px 0px 16px" }} icon={<AccountTreeOutlined style={{ fontSize: "18px" }} />}>
                 <Link to={`/boards/${boardId}/gant`}>Гант</Link>
@@ -169,6 +177,7 @@ const Board = () => {
                 <Route path="/archive" element={<Archive boardId={boardId} />} />
                 <Route path="/users" element={<Users userId={userId} boardId={boardId} />} />
                 <Route path="/roles" element={<Roles userId={userId} boardId={boardId} />} />
+                <Route path="/history" element={<History />} />
               </Routes>
             </Content>
           </Layout>
@@ -228,13 +237,13 @@ const Board = () => {
 
       <Modal footer={null} title="Новый столбец" open={openAddSectionModal} onCancel={() => setOpenAddSectionModal(false)}>
         <Form form={form} onFinish={handleAddState}>
-          <Form.Item name="title" rules={[{ required: true, message: "Please input the name!" }]}>
+          <Form.Item name="title" rules={[{ required: true, message: "Введите название!" }]}>
             <Input required placeholder="Заголовок" />
           </Form.Item>
           <Form.Item>
             <Space>
               <Button type="primary" htmlType="submit">
-                Создать приоритет
+                Добавить столбец
               </Button>
               <Button onClick={() => setOpenAddSectionModal(false)}>Отмена</Button>
             </Space>
