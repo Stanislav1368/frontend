@@ -123,7 +123,7 @@ const Board = () => {
   return (
     <>
       <Layout style={{ height: "100vh" }}>
-        <Navbar backArrow={true} user={user} />
+        <Navbar backArrow={true} />
 
         <Layout>
           <Sider breakpoint="lg" collapsible collapsed={collapsed} onCollapse={onCollapse} theme="light">

@@ -1,11 +1,11 @@
-import { Avatar, Badge, Button, Dropdown, Flex, Typography, notification } from "antd";
+import { Avatar, Badge, Dropdown, Flex, notification, Menu, List } from "antd";
 import { Header } from "antd/es/layout/layout";
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { useQuery, useQueryClient } from "react-query";
-import SocketApi, { fetchUser, fetchUserId, getNotifications } from "../../../api";
+import SocketApi, { fetchUser, getInvitations, getNotificationsForUser, markNotificationsAsRead } from "../../../api";
 import "./Navbar.css";
 import { ArrowBack } from "@mui/icons-material";
-import { LogoutOutlined, ProfileOutlined, UserOutlined } from "@ant-design/icons";
+import { LogoutOutlined, UserOutlined, BellOutlined } from "@ant-design/icons";
 
 const handleLogoutClick = () => {
   localStorage.removeItem("token");
@@ -29,37 +29,77 @@ const items = [
     ),
   },
 ];
+
 const Navbar = ({ backArrow }) => {
   const { data: user, isLoading: isUserLoading } = useQuery("user", fetchUser);
 
-  const { data: notifications, isLoading: notificationsLoading } = useQuery(["notifications"], () => getNotifications(user.id), {
+  const { data: invitations, isLoading: invitationsLoading } = useQuery(["invitations"], () => getInvitations(user.id), {
     enabled: !!user?.id,
-    refetchOnWindowFocus: false,
+    refetchOnWindowFocus: true,
     keepPreviousData: true,
   });
-
+  const { data: notifications, isLoading: notificationsLoading } = useQuery(["notificationsForUser"], () => getNotificationsForUser(user.id), {
+    enabled: !!user?.id,
+    refetchOnWindowFocus: true,
+    keepPreviousData: true,
+  });
+  console.log(notifications);
+  console.log(invitations);
+  const filteredNotifications = notifications?.filter(
+    (notification) => notification.userId === user.id && notification.title === "Назначение на задачу"
+  );
+  const unreadNotifications = filteredNotifications?.filter((notification) => !notification.isRead);
   const queryClient = useQueryClient();
   useEffect(() => {
-    // SocketApi.createConnection();
-    SocketApi.socket.on("sendNotif", async (userId, title, message) => {
+    SocketApi.createConnection();
+    SocketApi.socket.on("sendInvite", async (userId, title, message) => {
       if (user?.id == userId) {
         notification.open({
           message: title,
           description: message,
         });
-
-        queryClient.invalidateQueries(["notifications"]);
+        console.log(invitations);
+        queryClient.invalidateQueries(["invitations"]);
       }
-      queryClient.invalidateQueries(["notifications"]);
+      // queryClient.invalidateQueries(["invitations"]);
+    });
+    SocketApi.socket.on("sendNotif", async () => {
+      console.log(notifications);
+      queryClient.invalidateQueries("notificationsForUser");
+    });
+    return () => {};
+  }, [notifications]);
+  useEffect(() => {
+    SocketApi.createConnection();
+    SocketApi.socket.on("sendNotif", async () => {
+      queryClient.invalidateQueries("notificationsForUser");
     });
 
     return () => {};
-  }, [user]);
+  }, []);
 
-  if (notificationsLoading) {
+  if (invitationsLoading) {
     return <>loading</>;
   }
-
+  console.log(filteredNotifications);
+  const menu = (
+    <Menu style={{ width: 400 }}>
+      {filteredNotifications
+        ?.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)) // Сортировка уведомлений по дате создания в обратном порядке
+        .map((notification) => (
+          <Menu.Item key={notification.id}>
+            <span>
+              Вы назначены на задачу {notification.task.title} на доске <a href={`boards/${notification.board.id}`}>{notification.board.title}</a>
+            </span>
+          </Menu.Item>
+        ))}
+    </Menu>
+  );
+  const markAllNotificationsAsRead = async () => {
+    const allNotificationIds = filteredNotifications.map((notification) => notification.id);
+    markNotificationsAsRead(user.id, allNotificationIds);
+    await queryClient.invalidateQueries(["notificationsForUser"]);
+  };
   return (
     <Header
       style={{
@@ -95,9 +135,17 @@ const Navbar = ({ backArrow }) => {
       </Flex>
 
       <Flex style={{ height: "100%" }}>
-        <Dropdown menu={{ items }}>
+        <Dropdown overlay={menu} trigger={["click"]} onClick={() => markAllNotificationsAsRead()}>
           <button className="profile-btn">
-            <Badge count={notifications ? notifications.length : 0}>
+            <Badge count={unreadNotifications ? unreadNotifications.length : 0}>
+              <Avatar size={32} icon={<BellOutlined />} />
+            </Badge>
+          </button>
+        </Dropdown>
+
+        <Dropdown menu={{ items }}>
+          <button style={{ minWidth: "125px" }} className="profile-btn">
+            <Badge count={invitations ? invitations.length : 0}>
               <Avatar size={32} icon={<UserOutlined />} />
             </Badge>
             <span style={{ marginLeft: "10px" }}>

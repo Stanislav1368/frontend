@@ -2,10 +2,10 @@ import { DownOutlined, ExclamationCircleOutlined, UserOutlined } from "@ant-desi
 import { Alert, Avatar, Button, Divider, Dropdown, Flex, Layout, Menu, Modal, Typography, message, List } from "antd";
 import { Content, Header } from "antd/es/layout/layout";
 import Title from "antd/es/typography/Title";
-import React from "react";
+import React, { useEffect } from "react";
 import KanbanBoard from "./KanbanBoard";
 import { useMutation, useQuery, useQueryClient } from "react-query";
-import { deleteBoard, deleteUserFromBoard, getCurrentRole, getNotificationsForBoard, getRoleByBoardId } from "../../../api";
+import SocketApi, { deleteBoard, deleteUserFromBoard, getCurrentRole, getNotificationsForBoard, getRoleByBoardId } from "../../../api";
 import { MoreVert, NotificationsOutlined } from "@mui/icons-material";
 import moment from "moment";
 
@@ -40,15 +40,18 @@ const KanbanLayout = ({
     refetchOnWindowFocus: false,
     keepPreviousData: true,
   });
-  const { data: notifications, isLoading: notificationsLoading } = useQuery(
-    ["notificationsForBoard"],
-    () => getNotificationsForBoard(userId, boardId),
-    {
-      enabled: !!userId,
-      refetchOnWindowFocus: false,
-      keepPreviousData: true,
-    }
-  );
+  const { data: notifications, isLoading: notificationsLoading } = useQuery(["notifications"], () => getNotificationsForBoard(userId, boardId), {
+    enabled: !!userId,
+    refetchOnWindowFocus: false,
+    keepPreviousData: true,
+  });
+  useEffect(() => {
+    SocketApi.socket.on("sendNotif", async () => {
+      queryClient.invalidateQueries(["notifications"]);
+    });
+
+    return () => {};
+  }, []);
   console.log(notifications);
 
   const filteredNotifications = notifications?.filter((notification) => notification.boardId == boardId && notification.title === "Задача завершена");

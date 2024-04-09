@@ -1,10 +1,8 @@
 import React, { useState } from "react";
-import { Select, Input, Button, message, Modal, Form, Table, Layout, Avatar, Flex } from "antd";
-import { ExclamationCircleOutlined, PlusOutlined } from "@ant-design/icons";
+import { Select, Input, Button, message, Modal, Form, Avatar } from "antd";
+import { PlusOutlined } from "@ant-design/icons";
 import {
-  addUserInBoard,
-  createNotification,
-  deleteBoard,
+  createInvitation,
   deleteUserFromBoard,
   fetchUser,
   fetchUserId,
@@ -14,9 +12,8 @@ import {
   getRoles,
   updateRole,
 } from "../../api";
-import { useMutation, useQuery, useQueryClient } from "react-query";
+import { useQuery, useQueryClient } from "react-query";
 import { useParams } from "react-router-dom";
-import { OutlinedFlag } from "@mui/icons-material";
 
 const Users = () => {
   const { boardId } = useParams();
@@ -75,12 +72,11 @@ const Users = () => {
   //   }
   // };
   const handleSendInvite = async (values) => {
-  
     if (values.email === user.email) {
       message.error("Нельзя отправить приглашение самому себе!");
       return;
     } else {
-      await createNotification(values.email, userId, boardId, "Приглашение", "Приглашение на доску"); // Здесь предполагается, что values содержит userId и boardId
+      await createInvitation(values.email, userId, boardId, "Приглашение", "Приглашение на доску"); // Здесь предполагается, что values содержит userId и boardId
       message.success("Приглашение отправлено!");
     }
   };

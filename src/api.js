@@ -255,21 +255,36 @@ export const fetchUserByEmail = async (email) => {
   return response.data;
 };
 
-export const getNotifications = async (userId) => {
-  const response = await axios.get(`${BASE_URL}/users/${userId}/notifications/inviteNotif`);
+export const getInvitations = async (userId) => {
+  const response = await axios.get(`${BASE_URL}/users/${userId}/invitations`);
   return response.data;
 };
 export const getNotificationsForBoard = async (userId, boardId) => {
   console.log({ boardId });
-  const response = await axios.get(`${BASE_URL}/users/${userId}/notifications`, { params: { boardId } });
+  const response = await axios.get(`${BASE_URL}/users/${userId}/notifications`, { params: { boardId: boardId } }); // Укажите boardId явно
   return response.data;
 };
-export const createNotification = async (email, fromUserId, boardId, title, message) => {
+export const getNotificationsForUser = async (userId) => {
+  const response = await axios.get(`${BASE_URL}/users/${userId}/notifications/forUser`); // Укажите boardId явно
+  return response.data;
+};
+export const markNotificationsAsRead = async (userId, notificationIds) => {
+  console.log(userId, notificationIds);
+  try {
+    const response = await axios.post(`${BASE_URL}/users/${userId}/notifications/readNotif`, { notificationIds });
+    console.log("Уведомления успешно отмечены как прочитанные", response.data);
+    return response.data;
+  } catch (error) {
+    console.error("Произошла ошибка при отметке уведомлений как прочитанных", error);
+    throw error;
+  }
+};
+export const createInvitation = async (email, fromUserId, boardId, title, message) => {
   try {
     const user = await fetchUserByEmail(email);
     const userId = user.id;
 
-    const response = await axios.post(`${BASE_URL}/users/${userId}/notifications/inviteNotif`, { title, message, userId, boardId, fromUserId });
+    const response = await axios.post(`${BASE_URL}/users/${userId}/invitations`, { title, message, userId, boardId, fromUserId });
 
     return response.data;
   } catch (error) {
@@ -277,18 +292,18 @@ export const createNotification = async (email, fromUserId, boardId, title, mess
     throw error;
   }
 };
-export const createNotificationForBoard = async (title, message, userId, boardId, fromUserId) => {
+export const createNotificationForBoard = async (title, message, userId, boardId, taskId) => {
   try {
-    const response = await axios.post(`${BASE_URL}/users/${userId}/notifications`, { title, message, userId, boardId, fromUserId });
+    const response = await axios.post(`${BASE_URL}/users/${userId}/notifications`, { title, message, userId, boardId, taskId });
     return response.data;
   } catch (error) {
     console.error(`Error deleting notification: ${error.message}`);
     throw error;
   }
 };
-export const deleteNotification = async (userId, notificationId) => {
+export const deleteInvitations = async (userId, notificationId) => {
   try {
-    const response = await axios.delete(`${BASE_URL}/users/${userId}/notifications/inviteNotif/${notificationId}`);
+    const response = await axios.delete(`${BASE_URL}/users/${userId}/invitations/${notificationId}`);
     return response.data;
   } catch (error) {
     console.error(`Error deleting notification: ${error.message}`);

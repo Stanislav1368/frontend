@@ -1,14 +1,7 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { Layout, Typography, List } from "antd";
 import { useQuery, useQueryClient } from "react-query";
-import SocketApi, {
-  createNotification,
-  createNotificationForBoard,
-  fetchUser,
-  fetchUserId,
-  getNotifications,
-  getNotificationsForBoard,
-} from "../../api";
+import { fetchUser, fetchUserId, getNotificationsForBoard } from "../../api";
 import { useParams } from "react-router-dom";
 import moment from "moment";
 const History = ({}) => {

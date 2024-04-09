@@ -2,55 +2,68 @@ import { Alert, Avatar, Button, Layout, List, Space, Tabs, Typography, message }
 import React, { useEffect } from "react";
 import Navbar from "../../Components/BoardHeader/Navbar/Navbar";
 import { useQuery, useQueryClient } from "react-query";
-import SocketApi, { addUserInBoard, deleteNotification, fetchUser, getNotifications } from "../../api";
+import SocketApi, {
+  addUserInBoard,
+  deleteInvitations,
+  fetchUser,
+  getInvitations,
+  getNotificationsForBoard,
+  getNotificationsForUser,
+} from "../../api";
 import { UserOutlined } from "@ant-design/icons";
 
 const { Content } = Layout;
-const { Title, Text } = Typography;
 const { TabPane } = Tabs;
 
 const UserProfile = () => {
   const { data: user, isLoading: isUserLoading } = useQuery("user", fetchUser);
-  const { data: notifications, isLoading: notificationsLoading } = useQuery(["notifications"], () => getNotifications(user.id), {
+  const { data: invitations, isLoading: invitationsLoading } = useQuery(["invitations"], () => getInvitations(user.id), {
     enabled: !!user?.id,
     refetchOnWindowFocus: false,
     keepPreviousData: true,
   });
 
   const queryClient = useQueryClient();
-  // const openNotification = (item) => {
-  //   notification.open({
-  //     message: item.title,
-  //     description: item.description,
-  //   });
-  // };
+  const { data: notifications, isLoading: notificationsLoading } = useQuery(
+    ["notificationsForBoard"],
+    () => getNotificationsForUser(user.id),
+    {
+      enabled: !!user?.id,
+      refetchOnWindowFocus: false,
+      keepPreviousData: true,
+    }
+  );
+  console.log(notifications);
+
+  const filteredNotifications = notifications?.filter((notification) => notification.title === "Назначение на задачу");
+
   const handleInviteUser = async (_notifId, _userId, _boardId) => {
     try {
       await addUserInBoard(_userId, _boardId);
-      await deleteNotification(_userId, _notifId);
+      await deleteInvitations(_userId, _notifId);
       queryClient.invalidateQueries(["users"]);
-      queryClient.invalidateQueries(["notifications"]);
+      queryClient.invalidateQueries(["invitations"]);
     } catch (error) {
       message.error("Произошла ошибка при добавлении пользователя на доску.");
     }
   };
   const handleDeleteInvite = async (_notifId, _userId) => {
     try {
-      await deleteNotification(_userId, _notifId);
-      queryClient.invalidateQueries(["notifications"]);
+      await deleteInvitations(_userId, _notifId);
+      queryClient.invalidateQueries(["invitations"]);
     } catch (error) {
       message.error("Произошла ошибка при отмене.");
     }
   };
   useEffect(() => {
     SocketApi.createConnection();
-    SocketApi.socket.on("sendInvite", async (userId) => {
-      queryClient.invalidateQueries(["notifications"]);
+    SocketApi.socket.on("sendInvite", async () => {
+      queryClient.invalidateQueries(["invitations"]);
     });
 
     return () => {};
   }, []);
-  if (isUserLoading || notificationsLoading) {
+  if (isUserLoading || invitationsLoading) {
     return (
       <>
         <Layout style={{ height: "100vh" }}>
@@ -65,7 +78,7 @@ const UserProfile = () => {
   return (
     <>
       <Layout style={{ height: "100vh" }}>
-        <Navbar backArrow={true} user={user}/>
+        <Navbar backArrow={true} user={user} />
         <Content style={{ padding: "0 5%", maxWidth: "1200px" }}>
           <div>
             <div style={{ display: "flex", alignItems: "center", marginBottom: "20px" }}>
@@ -83,7 +96,7 @@ const UserProfile = () => {
               </div>
             </div>
             <List
-              dataSource={notifications}
+              dataSource={invitations}
               renderItem={(item) => (
                 <div style={{ marginBottom: "10px" }}>
                   {/* Add margin-bottom to create spacing */}
