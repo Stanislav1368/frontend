@@ -78,9 +78,9 @@ const Navbar = ({ backArrow }) => {
     return () => {};
   }, []);
 
-  if (invitationsLoading) {
-    return <>loading</>;
-  }
+  // if (invitationsLoading) {
+  //   return <>loading</>;
+  // }
   console.log(filteredNotifications);
   const menu = (
     <Menu style={{ width: 400 }}>
@@ -89,7 +89,7 @@ const Navbar = ({ backArrow }) => {
         .map((notification) => (
           <Menu.Item key={notification.id}>
             <span>
-              Вы назначены на задачу {notification.task.title} на доске <a href={`boards/${notification.board.id}`}>{notification.board.title}</a>
+              Вы назначены на задачу {notification.task.title} на доске <a href={`/boards/${notification.board.id}`}>{notification.board.title}</a>
             </span>
           </Menu.Item>
         ))}

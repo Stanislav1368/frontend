@@ -101,8 +101,8 @@ export async function updateSubTaskIsCompleted(userId, boardId, stateId, taskId,
   );
 }
 
-export async function updateTaskTitle(userId, boardId, stateId, taskId, data) {
-  await axios.put(`${BASE_URL}/users/${userId}/boards/${boardId}/states/${stateId}/tasks/${taskId}`, { newStateId: newState, newOrder: newOrderNum });
+export async function updateTaskUsers(userId, boardId, stateId, taskId, isResponsible) {
+  await axios.put(`${BASE_URL}/users/${userId}/boards/${boardId}/states/${stateId}/tasks/${taskId}/users`, { isResponsible: isResponsible });
 }
 
 export async function updateBoard(userId, boardId, updatedData) {
@@ -309,4 +309,34 @@ export const deleteInvitations = async (userId, notificationId) => {
     console.error(`Error deleting notification: ${error.message}`);
     throw error;
   }
+};
+
+export const fetchFiles = async (taskId) => {
+  const response = await axios.get(`${BASE_URL}/files/${taskId}`);
+  console.log(response.data)
+  return response.data;
+};
+
+export const uploadFile = async (file, taskId) => {
+  const formData = new FormData();
+  formData.append("file", file);
+  
+  try {
+    const response = await axios.post(`${BASE_URL}/files/upload/${taskId}`, formData, {
+      headers: {
+        "Content-Type": "multipart/form-data",
+      },
+    });
+
+    return response.data; // Возвращение данных из ответа сервера
+  } catch (error) {
+    throw error; // Проброс ошибки для обработки на стороне компонента
+  }
+};
+
+export const checkAccessibility = (boardId, user) => {
+  console.log(boardId, user?.boards);
+
+  if (user?.boards.some((board) => board.id.toString() === boardId)) return true;
+  return false;
 };

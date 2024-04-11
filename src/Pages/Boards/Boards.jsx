@@ -3,7 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "react-query";
 import moment from "moment/moment";
 import { AddBoard, fetchBoards, fetchUser, updateBoard } from "../../api";
 import "./Boards.css";
-import { Button, Card, Col, Form, Input, Layout, Modal, Row, Switch } from "antd";
+import { Button, Spin, Card, Col, Form, Input, Layout, Modal, Row, Switch } from "antd";
 import { PlusCircleOutlined } from "@ant-design/icons";
 import { Star } from "@mui/icons-material";
 import Navbar from "../../Components/BoardHeader/Navbar/Navbar";
@@ -43,77 +43,60 @@ const Boards = () => {
       console.error(error);
     }
   };
-
+  console.log("Данные о досках:", boards);
   return (
     <>
       <Layout style={{ height: "100vh" }}>
         <Navbar backArrow={false}></Navbar>
-        {/* <Header
-          style={{
-            backgroundColor: "#fff",
-            display: "flex",
-            justifyContent: "space-between",
-            padding: "0px 0px 0px 10px",
-            alignItems: "center",
-            height: "50px",
-          }}>
-          <h1
-            style={{
-              margin: 0,
-              letterSpacing: "3.5px",
-              flex: "0 0 auto",
-              lineHeight: "50px",
-              textTransform: "uppercase",
-              width: "130px",
-              fontSize: "20px",
-              fontWeight: 700,
-            }}>
-            Header
-          </h1>
-          <Flex style={{ height: "100%" }}>
-            <ProfileButton />
-          </Flex>
-        </Header> */}
         <div className="body-boards">
           <div className="switch-element">
             <span>{showOnlyFavorites ? <Star style={{ color: "gold" }}></Star> : <Star style={{ color: "gray" }}></Star>}</span>
             <Switch checked={showOnlyFavorites} onChange={(checked) => setShowOnlyFavorites(checked)} />
           </div>
-          <Row className="grid-boards" gutter={16}>
-            {Array.isArray(filteredBoards) &&
-              filteredBoards.map((board) => (
-                <Col xs={24} sm={12} md={8} lg={6} key={board.id} style={{ margin: "8px 0px" }}>
-                  <Card
-                    bodyStyle={{ padding: "0px 15px", width: "100%" }}
-                    style={{
-                      height: "100px",
-                      width: "100%",
-                    }}
-                    onClick={() => {
-                      window.location.href = `/boards/${board.id}`;
-                    }}>
-                    <div style={{ justifyContent: "space-between", display: "flex", alignItems: "center", width: "100%" }}>
-                      {board.title}
-                      <Star
-                        style={{ color: board.favorite ? "gold" : "grey" }}
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          handleToggleFavorite(board.id);
-                        }}></Star>
-                    </div>
-                    <div className="board-created-date">Создана {moment.utc(board.createdAt).format("DD.MM.YYYY")}</div>
-                  </Card>
-                </Col>
-              ))}
-            <Col xs={24} sm={12} md={8} lg={6} style={{ margin: "8px 0px" }}>
-              <Card className="add-board" onClick={() => setOpenAddBoardModal(true)}>
-                <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
-                  <PlusCircleOutlined style={{ fontSize: "48px", color: "#D1D1D1" }}></PlusCircleOutlined>
-                  Создать доску
-                </div>
-              </Card>
-            </Col>
-          </Row>
+          {isBoardsLoading ? (
+            <Spin size="large" />
+          ) : (
+             (
+              <>
+                {/* Ваш текущий код для отображения досок */}
+                <Row className="grid-boards" gutter={16}>
+                  {Array.isArray(filteredBoards) &&
+                    filteredBoards.map((board) => (
+                      <Col xs={24} sm={12} md={8} lg={6} key={board.id} style={{ margin: "8px 0px" }}>
+                        <Card
+                          bodyStyle={{ padding: "0px 15px", width: "100%" }}
+                          style={{
+                            height: "100px",
+                            width: "100%",
+                          }}
+                          onClick={() => {
+                            window.location.href = `/boards/${board.id}`;
+                          }}>
+                          <div style={{ justifyContent: "space-between", display: "flex", alignItems: "center", width: "100%" }}>
+                            {board.title}
+                            <Star
+                              style={{ color: board.favorite ? "gold" : "grey" }}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleToggleFavorite(board.id);
+                              }}></Star>
+                          </div>
+                          <div className="board-created-date">Создана {moment.utc(board.createdAt).format("DD.MM.YYYY")}</div>
+                        </Card>
+                      </Col>
+                    ))}
+                  <Col xs={24} sm={12} md={8} lg={6} style={{ margin: "8px 0px" }}>
+                    <Card className="add-board" onClick={() => setOpenAddBoardModal(true)}>
+                      <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
+                        <PlusCircleOutlined style={{ fontSize: "48px", color: "#D1D1D1" }}></PlusCircleOutlined>
+                        Создать доску
+                      </div>
+                    </Card>
+                  </Col>
+                </Row>
+              </>
+            )
+          )}
         </div>
       </Layout>
       <Modal title="Новая доска" open={openAddBoardModal} onCancel={() => setOpenAddBoardModal(false)} footer={null}>

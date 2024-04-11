@@ -131,7 +131,7 @@ const KanbanLayout = ({
             ))}
           </Avatar.Group>
           <Dropdown overlay={menu}>
-            <Button type="primary">
+            <Button>
               <NotificationsOutlined style={{ cursor: "pointer" }} onClick={(e) => e.preventDefault()} />
             </Button>
           </Dropdown>

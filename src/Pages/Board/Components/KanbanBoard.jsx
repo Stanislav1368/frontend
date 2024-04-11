@@ -22,7 +22,7 @@ const KanbanBoard = ({ columns, updateColumns, boardId, userId, users, prioritie
   const queryClient = useQueryClient();
   const { data: currentRole, isLoading: currentRoleLoading } = useQuery("currentRole", () => getCurrentRole(userId, boardId));
   const { data: isOwner, isLoading: ownerLoading } = useQuery("isOwner", () => getRoleByBoardId(userId, boardId));
-
+    
   const [editingColumnId, setEditingColumnId] = useState(null);
   const onDragEnd = (result) => {
     const { source, destination } = result;
@@ -168,6 +168,7 @@ const KanbanBoard = ({ columns, updateColumns, boardId, userId, users, prioritie
                                         deleteTask={handleDeleteTask}
                                         userId={userId}
                                         boardId={boardId}
+                                        usersBoard={users}
                                       />
                                     )}
                                   </div>

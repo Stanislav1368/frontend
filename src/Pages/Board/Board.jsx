@@ -1,14 +1,14 @@
 import React, { useEffect, useState } from "react";
-import { Button, ColorPicker, Divider, Form, Input, Layout, Menu, Modal, Space, Spin, Tag } from "antd";
+import { Button, ColorPicker, Divider, Form, Input, Layout, Menu, Modal, Space, Tag, Spin } from "antd";
 import { useQuery } from "react-query";
 const { Sider } = Layout;
 import { useMutation, useQueryClient } from "react-query";
 import ArchiveIcon from "@mui/icons-material/Archive";
+
 import SocketApi, {
-  AddBoard,
   addState,
+  checkAccessibility,
   createPriority,
-  deleteState,
   fetchBoardById,
   fetchStates,
   fetchUser,
@@ -20,8 +20,8 @@ import SocketApi, {
   updateBoardWithColumns,
 } from "../../api";
 // import "../Boards/Boards.css";
-import { BrowserRouter, Link, Route, Router, Routes, useParams } from "react-router-dom";
-import { AccountTreeOutlined, Dashboard, HistoryOutlined, RollerShades, SecurityOutlined, ViewKanbanOutlined } from "@mui/icons-material";
+import { BrowserRouter, Link, Route, Routes, useParams, Navigate } from "react-router-dom";
+import { AccountTreeOutlined, HistoryOutlined, SecurityOutlined, ViewKanbanOutlined } from "@mui/icons-material";
 import Archive from "../Archive/Archive";
 import GanttChart from "../GanttChart/GanttChart";
 import KanbanLayout from "./Components/KanbanLayout";
@@ -29,8 +29,9 @@ import Navbar from "../../Components/BoardHeader/Navbar/Navbar";
 import Users from "../BoardUsers/Users";
 import Roles from "../BoardRoles/Roles";
 import { Content } from "antd/es/layout/layout";
-import { TeamOutlined, UserOutlined } from "@ant-design/icons";
+import { TeamOutlined } from "@ant-design/icons";
 import History from "../History/History";
+import NotFoundPage from "../NotFoundPage/NotFoundPage";
 
 const Board = () => {
   const queryClient = useQueryClient();
@@ -43,7 +44,11 @@ const Board = () => {
     refetchOnWindowFocus: false,
     keepPreviousData: true,
   });
-  const { data: user, isLoading: isUserLoading } = useQuery("user", fetchUser);
+  const { data: user, isLoading: isUserLoading } = useQuery("user", fetchUser, {
+    enabled: !!userId,
+    refetchOnWindowFocus: false,
+    keepPreviousData: true,
+  });
   const { data: currentRole, isLoading: currentRoleLoading } = useQuery("currentRole", () => getCurrentRole(userId, boardId), {
     enabled: !!userId,
     refetchOnWindowFocus: false,
@@ -58,6 +63,7 @@ const Board = () => {
   const CreatePriorityMutation = useMutation((data) => createPriority(data, board.id), {
     onSuccess: () => queryClient.invalidateQueries(["priorities"]),
   });
+ 
   const createPriorityForBoard = async (values) => {
     try {
       values.color = hexString;
@@ -117,122 +123,89 @@ const Board = () => {
       console.error(error);
     }
   };
-
   const [openTaskModal, setOpenTaskModal] = useState(false);
 
+  const hasAccess = user && checkAccess(parseInt(boardId), user.boards);
+  // if (!user) {
+  //   return (
+
+  //   );
+  // }
+  console.log(hasAccess);
   return (
     <>
       <Layout style={{ height: "100vh" }}>
         <Navbar backArrow={true} />
-
-        <Layout>
-          <Sider breakpoint="lg" collapsible collapsed={collapsed} onCollapse={onCollapse} theme="light">
-            <div className="logo" />
-            <Menu theme="light" mode="inline">
-              <Menu.Item style={{ padding: "0px 16px 0px 16px" }} icon={<ViewKanbanOutlined style={{ fontSize: "18px" }} />}>
-                <Link to={`/boards/${boardId}/`}> Канбан доска</Link>
-              </Menu.Item>
-              <Menu.Item style={{ padding: "0px 16px 0px 16px" }} icon={<HistoryOutlined style={{ fontSize: "18px" }} />}>
-                <Link to={`/boards/${boardId}/history`}>История</Link>
-              </Menu.Item>
-              <Menu.Item style={{ padding: "0px 16px 0px 16px" }} icon={<AccountTreeOutlined style={{ fontSize: "18px" }} />}>
-                <Link to={`/boards/${boardId}/gant`}>Гант</Link>
-              </Menu.Item>
-
-              <Menu.Item style={{ padding: "0px 16px 0px 16px" }} icon={<ArchiveIcon style={{ fontSize: "18px" }} />}>
-                <Link to={`/boards/${boardId}/archive`}>Архив</Link>
-              </Menu.Item>
-              <Divider style={{ margin: "8px 0px 8px 0px" }}></Divider>
-              <Menu.Item style={{ padding: "0px 16px 0px 16px" }} icon={<TeamOutlined style={{ fontSize: "18px" }} />}>
-                <Link to={`/boards/${boardId}/users`}>Пользователи</Link>
-              </Menu.Item>
-              <Menu.Item style={{ padding: "0px 16px 0px 16px" }} icon={<SecurityOutlined style={{ fontSize: "18px" }} />}>
-                <Link to={`/boards/${boardId}/roles`}>Роли</Link>
-              </Menu.Item>
-            </Menu>
-          </Sider>
-          <Layout>
-            <Content>
-              <Routes>
-                <Route
-                  path="/"
-                  index
-                  element={
-                    <KanbanLayout
-                      boardId={boardId}
-                      board={board}
-                      usersBoard={usersBoard}
-                      columns={columns}
-                      updateColumns={updateColumns}
-                      userId={userId}
-                      priorities={priorities}
-                      openAddSectionModal={openAddSectionModal}
-                      setOpenAddSectionModal={setOpenAddSectionModal}
-                      openAddPriorityModal={openAddPriorityModal}
-                      setOpenAddPriorityModal={setOpenAddPriorityModal}
-                    />
-                  }
-                />
-                <Route path="/gant" element={<GanttChart data={columns} />} />
-                <Route path="/archive" element={<Archive boardId={boardId} />} />
-                <Route path="/users" element={<Users userId={userId} boardId={boardId} />} />
-                <Route path="/roles" element={<Roles userId={userId} boardId={boardId} />} />
-                <Route path="/history" element={<History />} />
-              </Routes>
-            </Content>
+        {!user ? (
+          <Layout style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100%" }}>
+            <Spin size="large" />
+            Загрузка...
           </Layout>
-        </Layout>
-
-        {/* <Layout>
-          <Sider breakpoint="lg" collapsible collapsed={collapsed} onCollapse={onCollapse} theme="light">
-            <div className="logo" />
-            <Menu theme="light" defaultSelectedKeys={["1"]} mode="inline" selectedKeys={[selectedMenuItem]} onClick={handleMenuClick}>
-              <Menu.Item style={{ padding: "0px 16px 0px 16px" }} key="1" icon={<ViewKanbanOutlined style={{ fontSize: "18px" }} />}>
-                Канбан доска
-              </Menu.Item>
-              <Menu.Item style={{ padding: "0px 16px 0px 16px" }} key="2" icon={<AccountTreeOutlined style={{ fontSize: "18px" }} />}>
-                Диаграмма Ганта
-              </Menu.Item>
-              <Menu.Item style={{ padding: "0px 16px 0px 16px" }} key="3" icon={<ArchiveIcon style={{ fontSize: "18px" }} />}>
-                Архив
-              </Menu.Item>
-              <Divider style={{ margin: "8px 0px 8px 0px" }}></Divider>
-              <Menu.Item style={{ padding: "0px 16px 0px 16px" }} key="4" icon={<Dashboard style={{ fontSize: "18px" }} />}>
-                Пользователи
-              </Menu.Item>
-
-              <Menu.Item style={{ padding: "0px 16px 0px 16px" }} key="5" icon={<Dashboard style={{ fontSize: "18px" }} />}>
-                Роли
-              </Menu.Item>
-            </Menu>
-          </Sider>
+        ) : (
           <>
-            {isBoardLoading ? (
-              <Spin size="large" />
+            {hasAccess ? (
+              <Layout>
+                <Sider breakpoint="lg" collapsible collapsed={collapsed} onCollapse={onCollapse} theme="light">
+                  <div className="logo" />
+                  <Menu theme="light" mode="inline">
+                    <Menu.Item style={{ padding: "0px 16px 0px 16px" }} icon={<ViewKanbanOutlined style={{ fontSize: "18px" }} />}>
+                      <Link to={`/boards/${boardId}/`}> Канбан доска</Link>
+                    </Menu.Item>
+                    <Menu.Item style={{ padding: "0px 16px 0px 16px" }} icon={<HistoryOutlined style={{ fontSize: "18px" }} />}>
+                      <Link to={`/boards/${boardId}/history`}>История</Link>
+                    </Menu.Item>
+                    <Menu.Item style={{ padding: "0px 16px 0px 16px" }} icon={<AccountTreeOutlined style={{ fontSize: "18px" }} />}>
+                      <Link to={`/boards/${boardId}/gant`}>Гант</Link>
+                    </Menu.Item>
+
+                    <Menu.Item style={{ padding: "0px 16px 0px 16px" }} icon={<ArchiveIcon style={{ fontSize: "18px" }} />}>
+                      <Link to={`/boards/${boardId}/archive`}>Архив</Link>
+                    </Menu.Item>
+                    <Divider style={{ margin: "8px 0px 8px 0px" }}></Divider>
+                    <Menu.Item style={{ padding: "0px 16px 0px 16px" }} icon={<TeamOutlined style={{ fontSize: "18px" }} />}>
+                      <Link to={`/boards/${boardId}/users`}>Пользователи</Link>
+                    </Menu.Item>
+                    <Menu.Item style={{ padding: "0px 16px 0px 16px" }} icon={<SecurityOutlined style={{ fontSize: "18px" }} />}>
+                      <Link to={`/boards/${boardId}/roles`}>Роли</Link>
+                    </Menu.Item>
+                  </Menu>
+                </Sider>
+                <Layout>
+                  <Content>
+                    <Routes>
+                      <Route
+                        path="/"
+                        index
+                        element={
+                          <KanbanLayout
+                            boardId={boardId}
+                            board={board}
+                            usersBoard={usersBoard}
+                            columns={columns}
+                            updateColumns={updateColumns}
+                            userId={userId}
+                            priorities={priorities}
+                            openAddSectionModal={openAddSectionModal}
+                            setOpenAddSectionModal={setOpenAddSectionModal}
+                            openAddPriorityModal={openAddPriorityModal}
+                            setOpenAddPriorityModal={setOpenAddPriorityModal}
+                          />
+                        }
+                      />
+                      <Route path="/gant" element={<GanttChart data={columns} />} />
+                      <Route path="/archive" element={<Archive boardId={boardId} />} />
+                      <Route path="/users" element={<Users userId={userId} boardId={boardId} />} />
+                      <Route path="/roles" element={<Roles userId={userId} boardId={boardId} />} />
+                      <Route path="/history" element={<History />} />
+                    </Routes>
+                  </Content>
+                </Layout>
+              </Layout>
             ) : (
-              <>
-                {selectedMenuItem === "1" && (
-                  <KanbanLayout
-                    board={board}
-                    usersBoard={usersBoard}
-                    columns={columns}
-                    updateColumns={updateColumns}
-                    userId={userId}
-                    priorities={priorities}
-                    openAddSectionModal={openAddSectionModal}
-                    setOpenAddSectionModal={setOpenAddSectionModal}
-                    openAddPriorityModal={openAddPriorityModal}
-                    setOpenAddPriorityModal={setOpenAddPriorityModal}
-                  />
-                )}
-                {selectedMenuItem === "2" && <GanttChart />}
-                {selectedMenuItem === "3" && <Archive boardId={boardId} />}
-                {selectedMenuItem === "4" && <Users userId={userId} boardId={boardId} usersBoard={usersBoard} />}
-                {selectedMenuItem === "5" && <Roles userId={userId} boardId={boardId} usersBoard={usersBoard} />}
-              </>
+              <NotFoundPage />
             )}
           </>
-        </Layout> */}
+        )}
       </Layout>
 
       <Modal footer={null} title="Новый столбец" open={openAddSectionModal} onCancel={() => setOpenAddSectionModal(false)}>
@@ -295,3 +268,7 @@ const Board = () => {
 };
 
 export default Board;
+function checkAccess(boardId, userBoards) {
+  console.log(boardId, userBoards);
+  return userBoards.some((board) => board.id === boardId);
+}

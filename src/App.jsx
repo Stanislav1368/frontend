@@ -7,6 +7,7 @@ import RegistrationPage from "./Pages/Registration/RegistrationPage";
 import Board from "./Pages/Board/Board";
 import Boards from "./Pages/Boards/Boards";
 import UserProfile from "./Pages/UserProfile/UserProfile";
+import NotFoundPage from "./Pages/NotFoundPage/NotFoundPage";
 
 const isAuthenticated = () => {
   const token = localStorage.getItem("token");
@@ -60,6 +61,7 @@ function App() {
                   <Board />
                 </RequireAuth>
               }></Route>
+            <Route path="page404" element={<NotFoundPage />}></Route>
             <Route path="/login" element={<LoginPage />} />
             <Route path="/registration" element={<RegistrationPage />} />
           </Route>
