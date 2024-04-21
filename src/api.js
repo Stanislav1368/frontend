@@ -158,20 +158,6 @@ export const getRoleByBoardId = async (userId, boardId) => {
 };
 export const getCurrentRole = async (userId, boardId) => {
   const response = await axios.get(`${BASE_URL}/users/${userId}/roleOnBoard/${boardId}`);
-
-  if (!response.data) {
-    const defaultRole = {
-      name: "Гость",
-      canCreateRole: false,
-      canEditRole: false,
-      canAccessArchive: false,
-      canCreatePriorities: false,
-      canAddColumns: false,
-      canAddTasks: false,
-      canInviteUsers: false,
-    };
-    return defaultRole;
-  }
   return response.data;
 };
 export const updateRoleByBoardId = async (userId, boardId, updatedData) => {
@@ -180,22 +166,14 @@ export const updateRoleByBoardId = async (userId, boardId, updatedData) => {
 };
 
 export const getRoles = async (boardId) => {
-  const response = await axios.get(`${BASE_URL}/boards/${boardId}/roles`);
-
+  const response = await axios.get(`${BASE_URL}/roles`);
   return response.data;
 };
 
-export const getRole = async (boardId, roleId) => {
-  const response = await axios.get(`${BASE_URL}/boards/${boardId}/roles/${roleId}`);
+export const getRole = async (roleId) => {
+  const response = await axios.get(`${BASE_URL}/roles/${roleId}`);
   return response.data;
 };
-export async function createRole(data, boardId) {
-  await axios.post(`${BASE_URL}/boards/${boardId}/roles`, data);
-}
-
-export async function deleteRole(boardId, roleId) {
-  await axios.delete(`${BASE_URL}/boards/${boardId}/roles/${roleId}`);
-}
 
 export async function changeRole(boardId, roleId, updatedData) {
   try {
