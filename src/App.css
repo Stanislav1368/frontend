@@ -62,3 +62,6 @@
 .actionFile:hover {
   background-color: rgba(192, 192, 192, 0.3);
 }
+.ant-upload .ant-upload-select {
+  width: "1000px"
+}

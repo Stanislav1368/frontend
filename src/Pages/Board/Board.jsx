@@ -32,6 +32,7 @@ import { Content } from "antd/es/layout/layout";
 import { TeamOutlined } from "@ant-design/icons";
 import History from "../History/History";
 import NotFoundPage from "../NotFoundPage/NotFoundPage";
+import HoursTask from "../HoursTask/HoursTask";
 
 const Board = () => {
   const queryClient = useQueryClient();
@@ -131,7 +132,8 @@ const Board = () => {
 
   //   );
   // }
-  console.log(hasAccess);
+  console.log(columns);
+  
   return (
     <>
       <Layout style={{ height: "100vh" }}>
@@ -157,7 +159,9 @@ const Board = () => {
                     <Menu.Item style={{ padding: "0px 16px 0px 16px" }} icon={<AccountTreeOutlined style={{ fontSize: "18px" }} />}>
                       <Link to={`/boards/${boardId}/gant`}>Гант</Link>
                     </Menu.Item>
-
+                    <Menu.Item style={{ padding: "0px 16px 0px 16px" }} icon={<AccountTreeOutlined style={{ fontSize: "18px" }} />}>
+                      <Link to={`/boards/${boardId}/hoursTask`}>распределении часов на задачи</Link>
+                    </Menu.Item>
                     <Menu.Item style={{ padding: "0px 16px 0px 16px" }} icon={<ArchiveIcon style={{ fontSize: "18px" }} />}>
                       <Link to={`/boards/${boardId}/archive`}>Архив</Link>
                     </Menu.Item>
@@ -193,6 +197,7 @@ const Board = () => {
                         }
                       />
                       <Route path="/gant" element={<GanttChart data={columns} />} />
+                      <Route path="/hoursTask" element={<HoursTask data={columns} />} />
                       <Route path="/archive" element={<Archive boardId={boardId} />} />
                       <Route path="/users" element={<Users userId={userId} boardId={boardId} />} />
                       <Route path="/roles" element={<Roles userId={userId} boardId={boardId} />} />

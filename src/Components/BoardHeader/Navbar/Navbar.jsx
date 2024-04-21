@@ -2,10 +2,10 @@ import { Avatar, Badge, Dropdown, Flex, notification, Menu, List } from "antd";
 import { Header } from "antd/es/layout/layout";
 import React, { useEffect } from "react";
 import { useQuery, useQueryClient } from "react-query";
-import SocketApi, { fetchUser, getInvitations, getNotificationsForUser, markNotificationsAsRead } from "../../../api";
+import SocketApi, { deleteNotification, fetchUser, getInvitations, getNotificationsForUser, markNotificationsAsRead } from "../../../api";
 import "./Navbar.css";
 import { ArrowBack } from "@mui/icons-material";
-import { LogoutOutlined, UserOutlined, BellOutlined } from "@ant-design/icons";
+import { LogoutOutlined, UserOutlined, BellOutlined, DeleteOutlined } from "@ant-design/icons";
 
 const handleLogoutClick = () => {
   localStorage.removeItem("token");
@@ -65,13 +65,14 @@ const Navbar = ({ backArrow }) => {
     });
     SocketApi.socket.on("sendNotif", async () => {
       console.log(notifications);
-      queryClient.invalidateQueries("notificationsForUser");
+      queryClient.invalidateQueries(["notificationsForUser"]);
     });
     return () => {};
   }, [notifications]);
   useEffect(() => {
     SocketApi.createConnection();
     SocketApi.socket.on("sendNotif", async () => {
+      console.log("updateResponsers");
       queryClient.invalidateQueries("notificationsForUser");
     });
 
@@ -87,10 +88,16 @@ const Navbar = ({ backArrow }) => {
       {filteredNotifications
         ?.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)) // Сортировка уведомлений по дате создания в обратном порядке
         .map((notification) => (
-          <Menu.Item key={notification.id}>
-            <span>
-              Вы назначены на задачу {notification.task.title} на доске <a href={`/boards/${notification.board.id}`}>{notification.board.title}</a>
-            </span>
+          <Menu.Item style={{ cursor: "default" }} key={notification.id} onClick={(e) => e.stopPropagation()}>
+            <Flex>
+              <span>
+                Вы назначены на задачу {notification?.task?.title} на доске <a href={`/boards/${notification?.board?.id}`}>{notification?.board?.title}</a>
+              </span>
+              <DeleteOutlined onClick={()=>{deleteNotification(user?.id, notification?.id); queryClient.invalidateQueries("notificationsForUser")}}
+                className="actionFile"
+                style={{ cursor: "pointer", padding: "5px", borderRadius: "5px", fontSize: "20px", color: "#ff4d4f" }}
+              />
+            </Flex>
           </Menu.Item>
         ))}
     </Menu>

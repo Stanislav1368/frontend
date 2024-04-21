@@ -130,11 +130,7 @@ const KanbanLayout = ({
               </Avatar>
             ))}
           </Avatar.Group>
-          <Dropdown overlay={menu}>
-            <Button>
-              <NotificationsOutlined style={{ cursor: "pointer" }} onClick={(e) => e.preventDefault()} />
-            </Button>
-          </Dropdown>
+         
         </Flex>
       </Header>
       <div style={{ display: "flex", padding: "0px 10px 10px 10px", gap: "5px" }}>
@@ -156,6 +152,8 @@ const KanbanLayout = ({
             Метки
           </Button>
         )}
+        <>Фильтр</>
+        {console.log(columns)}
       </div>
       <Divider style={{ margin: "0px 0px" }}></Divider>
       <Content style={{ padding: 10, overflowY: "auto", height: "100%" }}>

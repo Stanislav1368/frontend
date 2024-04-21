@@ -4,7 +4,7 @@ import { useQuery, useQueryClient } from "react-query";
 import SocketApi, { commentTask, getCommentsTask } from "../api";
 import { Avatar, Button, Form, Input, List, Divider } from "antd";
 
-const Comments = ({ userId, boardId, stateId, taskId }) => {
+const Comments = ({ userId, boardId, stateId, taskId, currentRole }) => {
   const queryClient = useQueryClient();
 
   const { data: comments, isLoading } = useQuery(["comments", taskId], () => getCommentsTask(userId, boardId, stateId, taskId), {
@@ -43,14 +43,14 @@ const Comments = ({ userId, boardId, stateId, taskId }) => {
           </List.Item>
         )}
       />
-      <FormComment userId={userId} boardId={boardId} stateId={stateId} taskId={taskId}></FormComment>
+      <FormComment userId={userId} boardId={boardId} stateId={stateId} taskId={taskId} currentRole={currentRole}></FormComment>
     </>
   );
 };
 
 export default Comments;
 
-const FormComment = ({ userId, boardId, stateId, taskId }) => {
+const FormComment = ({ userId, boardId, stateId, taskId, currentRole }) => {
   const [form] = Form.useForm();
   const [charCountWarning, setCharCountWarning] = useState(false);
 

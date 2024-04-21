@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { QueryClient, useQuery, useQueryClient } from "react-query";
 import moment from "moment";
 import dayjs from "dayjs";
-import { CalendarOutlined, CheckCircleOutlined, ExclamationCircleOutlined, PlusCircleOutlined, UserOutlined } from "@ant-design/icons";
+import { CalendarOutlined, CheckCircleOutlined, CheckOutlined, ExclamationCircleOutlined, PlusCircleOutlined, UserOutlined } from "@ant-design/icons";
 import {
   AddOutlined,
   Archive,
@@ -33,6 +33,7 @@ import {
   Space,
   Tag,
   Dropdown,
+  message,
 } from "antd";
 import Comments from "../../../Components/Comments";
 import {
@@ -97,7 +98,11 @@ const TaskCard = ({ task, isDragging, deleteTask, userId, boardId, usersBoard })
       icon: <ExclamationCircleOutlined />,
       okType: "danger",
       content: "Это действие нельзя отменить.",
-      onOk: () => deleteTask(task?.stateId, task?.id),
+      onOk: () => {
+        deleteTask(task?.stateId, task?.id);
+        queryClient.invalidateQueries(["notificationsForUser"]);
+        queryClient.invalidateQueries("notificationsForUser");
+      },
       cancelText: "Отмена",
     });
   };
@@ -152,10 +157,10 @@ const TaskCard = ({ task, isDragging, deleteTask, userId, boardId, usersBoard })
     await addSubTask(userId, boardId, task?.stateId, task?.id, { title: values.subtaskName, taskId: task?.id });
     await queryClient.invalidateQueries(["subtasks", task?.id]);
   };
-
+  console.log(task);
   return (
     <div style={{ marginBottom: "10px" }}>
-      {task?.priority ? ( // Проверяем наличие приоритета у задачи
+      {task?.priority ? (
         <Badge.Ribbon
           text={`${task?.priority?.name}`}
           color={`${task?.priority?.color}`}
@@ -190,6 +195,10 @@ const TaskCard = ({ task, isDragging, deleteTask, userId, boardId, usersBoard })
               {task?.startDate && <p>Начало: {moment(task?.startDate).locale("ru").format("DD.MM.YYYY")}</p>}
               {task?.endDate && <p>Конец: {moment(task?.endDate).locale("ru").format("DD.MM.YYYY")}</p>}
             </div>
+            <Progress
+              percent={subTasks?.length > 0 ? ((subTasks?.filter((subtask) => subtask.isCompleted).length / subTasks.length) * 100).toFixed(1) : 0}
+            />
+
             {task?.users && task?.users.length > 0 && (
               <>
                 <Divider>Ответственные</Divider>
@@ -223,7 +232,7 @@ const TaskCard = ({ task, isDragging, deleteTask, userId, boardId, usersBoard })
           }
           style={{
             width: 300,
-            boxShadow: isDragging ? "0 0 10px rgba(0,0,0,0.2)" : "none",
+            boxShadow: isDragging ? "0 0 10px rgba(0,0,0,0.5)" : "0 0 2px rgba(0,0,0,0.2)",
             transition: "background-color 0.2s, box-shadow 0.2s",
             backgroundColor: !task?.isCompleted ? "#ffffff" : "#f3f3f3", // Меняем цвет фона, чтобы выделить что задача завершена
             opacity: task?.isCompleted ? 0.6 : 1, // Уменьшаем немного прозрачность для дизейбленной карточки
@@ -233,7 +242,15 @@ const TaskCard = ({ task, isDragging, deleteTask, userId, boardId, usersBoard })
             {task?.startDate && <p>Начало: {moment(task?.startDate).locale("ru").format("DD.MM.YYYY")}</p>}
             {task?.endDate && <p>Конец: {moment(task?.endDate).locale("ru").format("DD.MM.YYYY")}</p>}
           </div>
+          {subTasks?.length > 0 && (
+            <>
+              <Progress
+                percent={subTasks.length > 0 ? ((subTasks.filter((subtask) => subtask.isCompleted).length / subTasks.length) * 100).toFixed(1) : 0}
+              />
+            </>
+          )}
 
+          {/* <SubTasksList subTasks={subTasks}></SubTasksList> */}
           {task?.users && task?.users.length > 0 && (
             <>
               <Divider orientation="left">Ответственные</Divider>
@@ -267,10 +284,30 @@ const TaskCard = ({ task, isDragging, deleteTask, userId, boardId, usersBoard })
         onClose={onClose}
         open={open}
         width={640}>
-        <TaskInfo task={task} stringToColor={stringToColor} moment={moment} userId={userId} boardId={boardId} usersBoard={usersBoard} />
-        <SubTasksList subTasks={subTasks} handleSubTaskCompletion={handleSubTaskCompletion} handleAddSubTask={handleAddSubTask} />
-        <FileComponent taskId={task?.id}/>
-        <Comments userId={userId} boardId={boardId} stateId={task.stateId} taskId={task.id}></Comments>
+        <TaskInfo
+          isOwner={isOwner}
+          currentRole={currentRole}
+          task={task}
+          stringToColor={stringToColor}
+          moment={moment}
+          userId={userId}
+          boardId={boardId}
+          usersBoard={usersBoard}
+        />
+        <SubTasksList
+          task={task}
+          isOwner={isOwner}
+          userId={userId}
+          currentRole={currentRole}
+          subTasks={subTasks}
+          handleSubTaskCompletion={handleSubTaskCompletion}
+          handleAddSubTask={handleAddSubTask}
+        />
+        {(currentRole?.canAddTasks || isOwner || task.users.some((user) => user.id === userId)) && (
+          <FileComponent currentRole={currentRole} taskId={task?.id} />
+        )}
+
+        <Comments currentRole={currentRole} userId={userId} boardId={boardId} stateId={task.stateId} taskId={task.id}></Comments>
       </Drawer>
     </div>
   );
@@ -294,7 +331,7 @@ function stringToColor(string) {
 
   return color;
 }
-const TaskHeader = ({ task, userId, boardId, handleArchiveTask, showDeleteConfirm, isOwner, canAddTasks, showUpdateConfirm }) => {
+const TaskHeader = ({ task, userId, boardId, handleArchiveTask, showDeleteConfirm, isOwner, canAddTasks, showUpdateConfirm, currentRole }) => {
   const queryClient = useQueryClient();
   const [isEditing, setIsEditing] = useState(false);
   const [newTitle, setNewTitle] = useState(task?.title);
@@ -321,7 +358,7 @@ const TaskHeader = ({ task, userId, boardId, handleArchiveTask, showDeleteConfir
 
   return (
     <div style={{ justifyContent: "space-between", display: "flex", alignItems: "center" }}>
-      {isEditing ? (
+      {isEditing && (isOwner || task.users.some((user) => user.id === userId)) ? (
         <>
           <Input
             ref={titleInputRef}
@@ -331,7 +368,9 @@ const TaskHeader = ({ task, userId, boardId, handleArchiveTask, showDeleteConfir
             onChange={(e) => setNewTitle(e.target.value)}
             onBlur={() => handleFocusChange(false)}
           />
-          <Button onClick={handleUpdateTask}>OK</Button>
+          <Button onClick={handleUpdateTask}>
+            <CheckOutlined />
+          </Button>
         </>
       ) : (
         <>
@@ -356,7 +395,7 @@ const TaskHeader = ({ task, userId, boardId, handleArchiveTask, showDeleteConfir
 };
 
 // Компонент с информацией о задаче
-const TaskInfo = ({ task, stringToColor, userId, boardId, usersBoard }) => {
+const TaskInfo = ({ task, stringToColor, userId, boardId, usersBoard, currentRole, isOwner }) => {
   const queryClient = useQueryClient();
   const [isEditingDesc, setIsEditingDesc] = useState(false);
   const [isEditingDate, setIsEditingDate] = useState(false);
@@ -369,7 +408,8 @@ const TaskInfo = ({ task, stringToColor, userId, boardId, usersBoard }) => {
   const descInputRef = useRef(null);
   const dateInputRef = useRef(null);
 
-  const handleUpdateTaskDesc = async () => {
+  const handleUpdateTaskDesc = async (desc) => {
+    console.log(desc);
     await updateTask(userId, boardId, task.stateId, task.id, { description: formData.newDesc });
     queryClient.invalidateQueries(["columns"]);
     setIsEditingDesc(false);
@@ -428,9 +468,12 @@ const TaskInfo = ({ task, stringToColor, userId, boardId, usersBoard }) => {
       })}
     </Menu>
   );
+  console.log(task);
   return (
     <>
-      {isEditingDesc ? (
+      {task.dependentTask && <>Родительская задача: {task?.dependentTask?.title}</>}
+      <Divider orientation="left">Описание</Divider>
+      {isEditingDesc && (isOwner || task.users.some((user) => user.id === userId)) ? (
         <>
           <Input.TextArea
             ref={descInputRef}
@@ -439,35 +482,39 @@ const TaskInfo = ({ task, stringToColor, userId, boardId, usersBoard }) => {
             onChange={(e) => setFormData({ ...formData, newDesc: e.target.value })}
             onBlur={() => handleDescFocusChange(false)}
           />
-          <Button onClick={handleUpdateTaskDesc}>OK</Button>
+          <Button onClick={handleUpdateTaskDesc}>
+            <CheckOutlined />
+          </Button>
         </>
       ) : (
         <p onClick={() => setIsEditingDesc(true)}>{task.description}</p>
       )}
-
       <Divider orientation="left">
         <CalendarOutlined /> Срок выполнения
       </Divider>
-
       {task?.startDate && task?.endDate && (
         <Flex style={{ alignItems: "center" }}>
-          <CalendarOutlined /> {moment(task.startDate).locale("ru").format("DD.MM.YYYY")} - {moment(task.endDate).locale("ru").format("DD.MM.YYYY")}
-          {isEditingDate ? (
+          {isEditingDate && (isOwner || task.users.some((user) => user.id === userId)) ? (
             <>
-              <DatePicker.RangePicker
+              <DatePicker.RangePicker onClick={(e) => e.stopPropagation()}
                 ref={dateInputRef}
                 value={formData.selectedDates}
                 onChange={handleRangeChange}
                 onBlur={() => handleDateFocusChange(false)}
               />
-              <Button onClick={handleUpdateTaskDate}>OK</Button>
+              <Button style={{ marginLeft: "5px" }} onClick={handleUpdateTaskDate}>
+                <CheckOutlined />
+              </Button>
             </>
           ) : (
-            <EditOutlined onClick={() => setIsEditingDate(true)} />
+            <>
+              <CalendarOutlined /> {moment(task.startDate).locale("ru").format("DD.MM.YYYY")} -{" "}
+              {moment(task.endDate).locale("ru").format("DD.MM.YYYY")}
+              {isOwner || task.users.some((user) => user.id === userId) ? <EditOutlined onClick={() => setIsEditingDate(true)} /> : null}
+            </>
           )}
         </Flex>
       )}
-
       <Divider orientation="left">
         <UserOutlined /> Ответственные
       </Divider>
@@ -488,9 +535,7 @@ const TaskInfo = ({ task, stringToColor, userId, boardId, usersBoard }) => {
           </Dropdown>
         </Flex>
       </Flex>
-
       <Divider orientation="left">Метки</Divider>
-
       {task?.priority && (
         <Tag key={task.priority.name} color={task.priority.color}>
           {task.priority.name}
@@ -500,8 +545,7 @@ const TaskInfo = ({ task, stringToColor, userId, boardId, usersBoard }) => {
   );
 };
 
-// Компонент списка подзадач
-const SubTasksList = ({ subTasks, handleSubTaskCompletion, handleAddSubTask }) => {
+const SubTasksList = ({ subTasks, handleSubTaskCompletion, handleAddSubTask, currentRole, userId, isOwner, task }) => {
   return (
     <>
       <Divider orientation="left">Подзадачи</Divider>
@@ -521,79 +565,33 @@ const SubTasksList = ({ subTasks, handleSubTaskCompletion, handleAddSubTask }) =
         dataSource={subTasks}
         renderItem={(subtask) => (
           <List.Item key={subtask.id}>
-            <Checkbox
-              className="checkbox"
-              type="checkbox"
-              onChange={() => {
-                handleSubTaskCompletion(subtask);
-              }}
-              checked={subtask?.isCompleted}>
-              {subtask.title}
-            </Checkbox>
+            <Flex>
+              {(isOwner || task.users.some((user) => user.id === userId)) && (
+                <Checkbox
+                  className="checkbox"
+                  type="checkbox"
+                  onChange={() => {
+                    handleSubTaskCompletion(subtask);
+                  }}
+                  checked={subtask?.isCompleted}></Checkbox>
+              )}
+              <span>{subtask.title}</span>
+            </Flex>
           </List.Item>
         )}
       />
-      <Form onFinish={handleAddSubTask}>
-        <Form.Item name="subtaskName" rules={[{ required: true, message: "Введите название подзадачи" }]}>
-          <Input placeholder="Введите название подзадачи" />
-        </Form.Item>
-        <Form.Item>
-          <Button style={{ backgroundColor: "#519839" }} type="primary" htmlType="submit">
-            Добавить подзадачу
-          </Button>
-        </Form.Item>
-      </Form>
-    </>
-  );
-};
-const UserSelectionModal = ({ usersBoard, handleUpdateTaskUsers }) => {
-  const [selectedUserIds, setSelectedUserIds] = useState([]);
-  const [isModalVisible, setIsModalVisible] = useState(false);
-
-  const showModal = () => {
-    setIsModalVisible(true);
-  };
-
-  const handleOk = async () => {
-    setIsModalVisible(false);
-    try {
-      await handleUpdateTaskUsers(selectedUserIds);
-      console.log("Task updated successfully with new users.");
-      // Дополнительные действия после успешного обновления задачи
-    } catch (error) {
-      console.error("Error updating task:", error);
-      // Обработка ошибок при обновлении задачи
-    }
-  };
-
-  const handleCancel = () => {
-    setIsModalVisible(false);
-  };
-
-  const handleUserToggle = (userId) => {
-    setSelectedUserIds((prevState) => {
-      if (prevState.includes(userId)) {
-        return prevState.filter((id) => id !== userId);
-      } else {
-        return [...prevState, userId];
-      }
-    });
-  };
-
-  return (
-    <>
-      <Button type="primary" onClick={showModal}>
-        Открыть модальное окно выбора пользователей
-      </Button>
-      <Modal title="Выберите пользователей для задачи" visible={isModalVisible} onOk={handleOk} onCancel={handleCancel}>
-        <Checkbox.Group onChange={(values) => setSelectedUserIds(values)} value={selectedUserIds}>
-          {usersBoard.map((user) => (
-            <Checkbox key={user.id} value={user.id}>
-              {user.firstName}
-            </Checkbox>
-          ))}
-        </Checkbox.Group>
-      </Modal>
+      {(currentRole?.canAddTasks || isOwner) && (
+        <Form onFinish={handleAddSubTask}>
+          <Form.Item name="subtaskName" rules={[{ required: true, message: "Введите название подзадачи" }]}>
+            <Input placeholder="Введите название подзадачи" />
+          </Form.Item>
+          <Form.Item>
+            <Button style={{ backgroundColor: "#519839" }} type="primary" htmlType="submit">
+              Добавить подзадачу
+            </Button>
+          </Form.Item>
+        </Form>
+      )}
     </>
   );
 };

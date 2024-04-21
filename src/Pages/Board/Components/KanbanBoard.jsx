@@ -22,7 +22,7 @@ const KanbanBoard = ({ columns, updateColumns, boardId, userId, users, prioritie
   const queryClient = useQueryClient();
   const { data: currentRole, isLoading: currentRoleLoading } = useQuery("currentRole", () => getCurrentRole(userId, boardId));
   const { data: isOwner, isLoading: ownerLoading } = useQuery("isOwner", () => getRoleByBoardId(userId, boardId));
-    
+
   const [editingColumnId, setEditingColumnId] = useState(null);
   const onDragEnd = (result) => {
     const { source, destination } = result;
@@ -126,7 +126,7 @@ const KanbanBoard = ({ columns, updateColumns, boardId, userId, users, prioritie
   };
   if (!ownerLoading || !currentRoleLoading) {
   }
-
+  console.log(columns);
   return (
     <>
       <DragDropContext onDragEnd={onDragEnd}>
@@ -202,12 +202,9 @@ const KanbanBoard = ({ columns, updateColumns, boardId, userId, users, prioritie
           <Form.Item label="Выберите даты" name="dates" rules={[{ required: true, message: "Пожалуйста, выберите даты" }]}>
             <RangePicker />
           </Form.Item>
-          {/* <Form.Item label="Начало задачи" name="startDate">
-            <DatePicker placeholder="Выберите дату и время" showTime format="YYYY-MM-DD HH:mm:ss" />
+          <Form.Item label="Время на задачу в часах" name="hours" rules={[{ required: false, message: "Введите количество часов" }]}>
+            <Input />
           </Form.Item>
-          <Form.Item label="Конец задачи" name="endDate">
-            <DatePicker placeholder="Выберите дату и время" showTime format="YYYY-MM-DD HH:mm:ss" />
-          </Form.Item> */}
           <Form.Item label="Ответственные" name="userIds">
             <Checkbox.Group>
               {users?.map((user) => (
@@ -224,6 +221,17 @@ const KanbanBoard = ({ columns, updateColumns, boardId, userId, users, prioritie
                   {priority.name}
                 </Select.Option>
               ))}
+            </Select>
+          </Form.Item>
+          <Form.Item label="Родительская задача" name="dependentTaskId">
+            <Select>
+              {columns?.map((column) =>
+                column?.tasks?.map((task) => (
+                  <Option key={task.id} value={task.id}>
+                    {task.title}
+                  </Option>
+                ))
+              )}
             </Select>
           </Form.Item>
           <Form.Item>
@@ -312,21 +320,23 @@ const ColumnHeader = ({ column, handleOpenTaskModal, userId, boardId, editingCol
               onClick={() => handleTitleClick(column.id)}>
               {column?.title}
             </Typography.Title>
-            <DeleteOutline
-              color="error"
-              style={{ cursor: "pointer" }}
-              onClick={() =>
-                Modal.confirm({
-                  title: "Вы уверены, что хотите удалить столбец?",
-                  okType: "danger",
-                  content: "Это действие нельзя отменить.",
-                  onOk: async () => {
-                    console.log(userId, boardId, column?.id);
-                    await deleteState(userId, boardId, column?.id);
-                    queryClient.invalidateQueries("columns");
-                  },
-                })
-              }></DeleteOutline>
+            {(currentRole?.canAddColumns || isOwner) && (
+              <DeleteOutline
+                color="error"
+                style={{ cursor: "pointer" }}
+                onClick={() =>
+                  Modal.confirm({
+                    title: "Вы уверены, что хотите удалить столбец?",
+                    okType: "danger",
+                    content: "Это действие нельзя отменить.",
+                    onOk: async () => {
+                      console.log(userId, boardId, column?.id);
+                      await deleteState(userId, boardId, column?.id);
+                      queryClient.invalidateQueries("columns");
+                    },
+                  })
+                }></DeleteOutline>
+            )}
           </Flex>
 
           {(currentRole?.canAddTasks || isOwner) && (

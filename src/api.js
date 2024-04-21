@@ -1,7 +1,7 @@
 import axios from "axios";
 import io from "socket.io-client";
 // const BASE_URL = "http://31.129.97.240:5000"; // Базовый URL API
-const BASE_URL = "http://localhost:5000"; // Базовый URL API
+export const BASE_URL = "http://localhost:5000"; // Базовый URL API
 
 export default class SocketApi {
   static socket;
@@ -104,7 +104,7 @@ export async function updateSubTaskIsCompleted(userId, boardId, stateId, taskId,
 export async function updateTaskUsers(userId, boardId, stateId, taskId, isResponsible) {
   await axios.put(`${BASE_URL}/users/${userId}/boards/${boardId}/states/${stateId}/tasks/${taskId}/users`, { isResponsible: isResponsible });
 }
-
+//TODO добавить удаление ответственных и добавить уведомления при редактировании ответственных
 export async function updateBoard(userId, boardId, updatedData) {
   await axios.put(`${BASE_URL}/users/${userId}/boards/${boardId}`, updatedData);
 }
@@ -259,6 +259,9 @@ export const getInvitations = async (userId) => {
   const response = await axios.get(`${BASE_URL}/users/${userId}/invitations`);
   return response.data;
 };
+export const deleteNotification = async (userId, notificationId) => {
+  const response = await axios.delete(`${BASE_URL}/users/${userId}/notifications/${notificationId}`); 
+};
 export const getNotificationsForBoard = async (userId, boardId) => {
   console.log({ boardId });
   const response = await axios.get(`${BASE_URL}/users/${userId}/notifications`, { params: { boardId: boardId } }); // Укажите boardId явно
@@ -313,14 +316,14 @@ export const deleteInvitations = async (userId, notificationId) => {
 
 export const fetchFiles = async (taskId) => {
   const response = await axios.get(`${BASE_URL}/files/${taskId}`);
-  console.log(response.data)
+  console.log(response.data);
   return response.data;
 };
 
 export const uploadFile = async (file, taskId) => {
   const formData = new FormData();
   formData.append("file", file);
-  
+
   try {
     const response = await axios.post(`${BASE_URL}/files/upload/${taskId}`, formData, {
       headers: {
@@ -328,12 +331,18 @@ export const uploadFile = async (file, taskId) => {
       },
     });
 
-    return response.data; // Возвращение данных из ответа сервера
+    return response.data;
   } catch (error) {
-    throw error; // Проброс ошибки для обработки на стороне компонента
+    throw error;
   }
 };
-
+export const deleteFile = async (file) => {
+  try {
+    await axios.delete(`${BASE_URL}/files/delete/${file.id}`, { data: file });
+  } catch (error) {
+    throw error;
+  }
+};
 export const checkAccessibility = (boardId, user) => {
   console.log(boardId, user?.boards);
 
