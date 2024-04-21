@@ -320,7 +320,7 @@ const ColumnHeader = ({ column, handleOpenTaskModal, userId, boardId, editingCol
               onClick={() => handleTitleClick(column.id)}>
               {column?.title}
             </Typography.Title>
-            {(currentRole?.canAddColumns || isOwner) && (
+            {(currentRole?.name === "Редактор" || currentRole?.name === "Администратор" || isOwner) && (
               <DeleteOutline
                 color="error"
                 style={{ cursor: "pointer" }}
@@ -339,7 +339,7 @@ const ColumnHeader = ({ column, handleOpenTaskModal, userId, boardId, editingCol
             )}
           </Flex>
 
-          {(currentRole?.canAddTasks || isOwner) && (
+          {(currentRole?.name === "Редактор" || currentRole?.name === "Администратор"|| isOwner) && (
             <Flex style={{ alignItems: "center" }}>
               <Typography.Title level={4} style={{ margin: "0", padding: "0px" }}>
                 <PlusOutlined onClick={() => handleOpenTaskModal(column?.id)} />

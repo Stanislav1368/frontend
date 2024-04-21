@@ -4,7 +4,7 @@ import { useQuery, useQueryClient } from "react-query";
 import SocketApi, { commentTask, getCommentsTask } from "../api";
 import { Avatar, Button, Form, Input, List, Divider } from "antd";
 
-const Comments = ({ userId, boardId, stateId, taskId, currentRole }) => {
+const Comments = ({ userId, boardId, stateId, taskId, currentRole, canComments }) => {
   const queryClient = useQueryClient();
 
   const { data: comments, isLoading } = useQuery(["comments", taskId], () => getCommentsTask(userId, boardId, stateId, taskId), {
@@ -43,7 +43,8 @@ const Comments = ({ userId, boardId, stateId, taskId, currentRole }) => {
           </List.Item>
         )}
       />
-      <FormComment userId={userId} boardId={boardId} stateId={stateId} taskId={taskId} currentRole={currentRole}></FormComment>
+
+      {canComments && <FormComment userId={userId} boardId={boardId} stateId={stateId} taskId={taskId} currentRole={currentRole}></FormComment>}
     </>
   );
 };
@@ -83,7 +84,7 @@ const FormComment = ({ userId, boardId, stateId, taskId, currentRole }) => {
       </Form.Item>
       {charCountWarning && <p style={{ color: "red" }}>Превышено допустимое количество символов (255)</p>}
       <Form.Item>
-        <Button type="primary" htmlType="submit" style={{backgroundColor: "#519839"}}>
+        <Button type="primary" htmlType="submit" style={{ backgroundColor: "#519839" }}>
           Добавить комментарий
         </Button>
       </Form.Item>

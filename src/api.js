@@ -165,7 +165,7 @@ export const updateRoleByBoardId = async (userId, boardId, updatedData) => {
   return response.data;
 };
 
-export const getRoles = async (boardId) => {
+export const getRoles = async () => {
   const response = await axios.get(`${BASE_URL}/roles`);
   return response.data;
 };

@@ -275,7 +275,7 @@ const TaskCard = ({ task, isDragging, deleteTask, userId, boardId, usersBoard })
             handleArchiveTask={handleArchiveTask}
             showDeleteConfirm={showDeleteConfirm}
             isOwner={isOwner}
-            canAddTasks={currentRole?.canAddTasks}
+            currentRole={currentRole}
             showUpdateConfirm={showUpdateConfirm}
           />
         }
@@ -307,7 +307,13 @@ const TaskCard = ({ task, isDragging, deleteTask, userId, boardId, usersBoard })
           <FileComponent currentRole={currentRole} taskId={task?.id} />
         )}
 
-        <Comments currentRole={currentRole} userId={userId} boardId={boardId} stateId={task.stateId} taskId={task.id}></Comments>
+        <Comments
+          currentRole={currentRole}
+          userId={userId}
+          boardId={boardId}
+          stateId={task.stateId}
+          taskId={task.id}
+          canComments={task.users.some((user) => user.id === userId)}></Comments>
       </Drawer>
     </div>
   );
@@ -331,7 +337,7 @@ function stringToColor(string) {
 
   return color;
 }
-const TaskHeader = ({ task, userId, boardId, handleArchiveTask, showDeleteConfirm, isOwner, canAddTasks, showUpdateConfirm, currentRole }) => {
+const TaskHeader = ({ task, userId, boardId, handleArchiveTask, showDeleteConfirm, isOwner, showUpdateConfirm, currentRole }) => {
   const queryClient = useQueryClient();
   const [isEditing, setIsEditing] = useState(false);
   const [newTitle, setNewTitle] = useState(task?.title);
@@ -355,7 +361,7 @@ const TaskHeader = ({ task, userId, boardId, handleArchiveTask, showDeleteConfir
       titleInputRef.current.focus();
     }
   }, [isEditing]);
-
+  console.log(isOwner || currentRole?.name === "Администратор" || task.creater === userId);
   return (
     <div style={{ justifyContent: "space-between", display: "flex", alignItems: "center" }}>
       {isEditing && (isOwner || task.users.some((user) => user.id === userId)) ? (
@@ -379,13 +385,17 @@ const TaskHeader = ({ task, userId, boardId, handleArchiveTask, showDeleteConfir
           </div>
 
           <div style={{ display: "flex", gap: "3px", flexDirection: "row" }}>
-            {(isOwner || canAddTasks) && <EditOutlined style={{ cursor: "pointer", color: "gray" }} onClick={showUpdateConfirm} />}
-            <ArchiveOutlined
-              color="primary"
-              style={{ cursor: "pointer" }}
-              onClick={() => {
-                handleArchiveTask(userId, boardId, task.stateId, task.id);
-              }}></ArchiveOutlined>
+            {(isOwner ||
+              currentRole?.name === "Администратор" ||
+              task.creater === userId) && (
+                <ArchiveOutlined
+                  color="primary"
+                  style={{ cursor: "pointer" }}
+                  onClick={() => {
+                    handleArchiveTask(userId, boardId, task.stateId, task.id);
+                  }}></ArchiveOutlined>
+              )}
+
             <DeleteOutline color="error" style={{ cursor: "pointer" }} onClick={showDeleteConfirm}></DeleteOutline>
           </div>
         </>
@@ -496,7 +506,8 @@ const TaskInfo = ({ task, stringToColor, userId, boardId, usersBoard, currentRol
         <Flex style={{ alignItems: "center" }}>
           {isEditingDate && (isOwner || task.users.some((user) => user.id === userId)) ? (
             <>
-              <DatePicker.RangePicker onClick={(e) => e.stopPropagation()}
+              <DatePicker.RangePicker
+                onClick={(e) => e.stopPropagation()}
                 ref={dateInputRef}
                 value={formData.selectedDates}
                 onChange={handleRangeChange}

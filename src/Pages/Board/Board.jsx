@@ -64,7 +64,7 @@ const Board = () => {
   const CreatePriorityMutation = useMutation((data) => createPriority(data, board.id), {
     onSuccess: () => queryClient.invalidateQueries(["priorities"]),
   });
- 
+
   const createPriorityForBoard = async (values) => {
     try {
       values.color = hexString;
@@ -133,7 +133,7 @@ const Board = () => {
   //   );
   // }
   console.log(columns);
-  
+
   return (
     <>
       <Layout style={{ height: "100vh" }}>
