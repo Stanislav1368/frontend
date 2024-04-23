@@ -15,6 +15,7 @@ const LoginPage = () => {
   const navigate = useNavigate();
 
   const handleLogin = async (values) => {
+    console.log(values)
     try {
       setLoading(true);
       await mutation.mutateAsync(values);

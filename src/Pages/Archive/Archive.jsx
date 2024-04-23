@@ -82,7 +82,7 @@ const Archive = ({ boardId }) => {
                   </div>
                 </>
               )}
-              {(currentRole?.name === "Редактор" || isOwner) && (
+              {(currentRole?.name === "Администратор" || currentRole?.name === "Редактор" || isOwner) && (
                 <Button
                   type="primary"
                   onClick={async () => {

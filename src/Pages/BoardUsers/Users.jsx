@@ -115,32 +115,32 @@ const Users = () => {
                   value={user.roleId}
                   onChange={(value) => handleRoleChange(user.id, value, `${user.firstName} ${user.lastName}`)}
                   disabled={user.id === userId || (currentRole?.name === "Администратор" && user.isOwner)}>
-        {roles &&
-              roles.map((role) => {
-                if (currentRole?.name === "Администратор") {
-                  if (role.name === "Редактор" || role.name === "Читатель") {
-                    return (
-                      <Select.Option key={role.id} value={role.id}>
-                        {role.name}
-                      </Select.Option>
-                    );
-                  }
-                } else if (user.isOwner) {
-                  if (role.name !== "Администратор") {
-                    return (
-                      <Select.Option key={role.id} value={role.id}>
-                        {role.name}
-                      </Select.Option>
-                    );
-                  }
-                } else {
-                  return (
-                    <Select.Option key={role.id} value={role.id}>
-                      {role.name}
-                    </Select.Option>
-                  );
-                }
-              })}
+                  {roles &&
+                    roles.map((role) => {
+                      if (currentRole?.name === "Администратор") {
+                        if (role.name === "Редактор" || role.name === "Читатель") {
+                          return (
+                            <Select.Option key={role.id} value={role.id}>
+                              {role.name}
+                            </Select.Option>
+                          );
+                        }
+                      } else if (user.isOwner) {
+                        if (role.name !== "Администратор") {
+                          return (
+                            <Select.Option key={role.id} value={role.id}>
+                              {role.name}
+                            </Select.Option>
+                          );
+                        }
+                      } else {
+                        return (
+                          <Select.Option key={role.id} value={role.id}>
+                            {role.name}
+                          </Select.Option>
+                        );
+                      }
+                    })}
                 </Select>
               )}
               {(isOwner || (currentRole?.name === "Администратор" && user.roleName !== "Администратор" && user.roleName !== "Владелец")) &&
@@ -156,7 +156,7 @@ const Users = () => {
         </div>
       ))}
 
-      {(currentRole?.canAddUser || isOwner) && (
+      {(currentRole?.name === "Администратор" || isOwner) && (
         <Button
           onClick={() => setShowAddUserModal(true)}
           style={{

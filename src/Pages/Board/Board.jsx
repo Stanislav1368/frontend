@@ -60,7 +60,7 @@ const Board = () => {
     refetchOnWindowFocus: false,
     keepPreviousData: true,
   });
-  const { data: board, isLoading: isBoardLoading } = useQuery("boards", () => fetchBoardById(userId, boardId), { enabled: !!userId });
+  const { data: board, isLoading: isBoardLoading } = useQuery("board", () => fetchBoardById(userId, boardId), { enabled: !!userId });
   const CreatePriorityMutation = useMutation((data) => createPriority(data, board.id), {
     onSuccess: () => queryClient.invalidateQueries(["priorities"]),
   });
@@ -160,7 +160,7 @@ const Board = () => {
                       <Link to={`/boards/${boardId}/gant`}>Гант</Link>
                     </Menu.Item>
                     <Menu.Item style={{ padding: "0px 16px 0px 16px" }} icon={<AccountTreeOutlined style={{ fontSize: "18px" }} />}>
-                      <Link to={`/boards/${boardId}/hoursTask`}>распределении часов на задачи</Link>
+                      <Link to={`/boards/${boardId}/hoursTask`}>Распределении часов на задачи</Link>
                     </Menu.Item>
                     <Menu.Item style={{ padding: "0px 16px 0px 16px" }} icon={<ArchiveIcon style={{ fontSize: "18px" }} />}>
                       <Link to={`/boards/${boardId}/archive`}>Архив</Link>
@@ -197,7 +197,7 @@ const Board = () => {
                         }
                       />
                       <Route path="/gant" element={<GanttChart data={columns} />} />
-                      <Route path="/hoursTask" element={<HoursTask data={columns} />} />
+                      <Route path="/hoursTask" element={<HoursTask data={columns} userId={userId} />} />
                       <Route path="/archive" element={<Archive boardId={boardId} />} />
                       <Route path="/users" element={<Users userId={userId} boardId={boardId} />} />
                       <Route path="/roles" element={<Roles userId={userId} boardId={boardId} />} />

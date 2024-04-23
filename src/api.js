@@ -19,8 +19,8 @@ export default class SocketApi {
   }
 }
 export async function login(data) {
+  console.log(data);
   const response = await axios.post(`${BASE_URL}/auth/login`, data);
-
   const token = response.data.token;
   localStorage.setItem("token", token);
 }
@@ -238,7 +238,7 @@ export const getInvitations = async (userId) => {
   return response.data;
 };
 export const deleteNotification = async (userId, notificationId) => {
-  const response = await axios.delete(`${BASE_URL}/users/${userId}/notifications/${notificationId}`); 
+  const response = await axios.delete(`${BASE_URL}/users/${userId}/notifications/${notificationId}`);
 };
 export const getNotificationsForBoard = async (userId, boardId) => {
   console.log({ boardId });

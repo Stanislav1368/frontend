@@ -1,4 +1,4 @@
-import { Alert, Avatar, Button, Layout, List, Space, Tabs, Typography, message } from "antd";
+import { Alert, Avatar, Button, Layout, List, Space, Spin, Tabs, Typography, message } from "antd";
 import React, { useEffect } from "react";
 import Navbar from "../../Components/BoardHeader/Navbar/Navbar";
 import { useQuery, useQueryClient } from "react-query";
@@ -69,7 +69,7 @@ const UserProfile = () => {
         <Layout style={{ height: "100vh" }}>
           <Navbar backArrow={false} />
 
-          <Layout>Loading</Layout>
+          <Layout style={{justifyContent: "center", alignItems: "center"}}><Spin  size="large" /></Layout>
         </Layout>
       </>
     );

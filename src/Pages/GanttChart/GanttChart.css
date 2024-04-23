@@ -2,3 +2,13 @@
   border-right: none !important;
   /* border-bottom: none !important; */
 }
+.ant-table-tbody > tr > td {
+  padding: 0px 8px !important;
+
+}
+
+.ant-table-thead > tr > th {
+  padding: 8px !important;
+
+}
+
