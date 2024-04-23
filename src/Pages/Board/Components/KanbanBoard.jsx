@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Card, Row, Col, Typography, Modal, Form, Input, DatePicker, Checkbox, Select, Button, Flex, Badge, Dropdown, Menu } from "antd";
+import { Card, Row, Col, Typography, Modal, Form, Input, DatePicker, Checkbox, Select, Button, Flex, Badge, Dropdown, Menu, InputNumber } from "antd";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 import {
   addTask,
@@ -18,7 +18,8 @@ import { useQuery, useQueryClient } from "react-query";
 import { Delete, DeleteOutline } from "@mui/icons-material";
 const { RangePicker } = DatePicker;
 
-const KanbanBoard = ({ columns, updateColumns, boardId, userId, users, priorities }) => {
+const KanbanBoard = ({ columns, updateColumns, boardId, userId, users, priorities, selectedUsers, selectedPriorities }) => {
+  console.log(columns);
   const queryClient = useQueryClient();
   const { data: currentRole, isLoading: currentRoleLoading } = useQuery("currentRole", () => getCurrentRole(userId, boardId));
   const { data: isOwner, isLoading: ownerLoading } = useQuery("isOwner", () => getRoleByBoardId(userId, boardId));
@@ -158,7 +159,9 @@ const KanbanBoard = ({ columns, updateColumns, boardId, userId, users, prioritie
                                 key={task.id}
                                 draggableId={`${task.id}`}
                                 index={index}
-                                isDragDisabled={!isOwner && !currentRole?.canAddTasks}>
+                                isDragDisabled={
+                                  !isOwner && task.creater !== userId || currentRole.name === "Читатель" || selectedUsers.length > 0 || selectedPriorities.length > 0
+                                }>
                                 {(provided, snapshot) => (
                                   <div ref={provided.innerRef} {...provided.draggableProps} {...provided.dragHandleProps}>
                                     {!task.isArchived && (
@@ -196,14 +199,33 @@ const KanbanBoard = ({ columns, updateColumns, boardId, userId, users, prioritie
           <Form.Item label="Заголовок" name="title" rules={[{ required: true, message: "Введите заголовок" }]}>
             <Input />
           </Form.Item>
-          <Form.Item label="Описание" name="description" rules={[{ required: true, message: "Введите описание" }]}>
+          <Form.Item label="Описание" name="description">
             <Input />
           </Form.Item>
-          <Form.Item label="Выберите даты" name="dates" rules={[{ required: true, message: "Пожалуйста, выберите даты" }]}>
+          <Form.Item label="Выберите даты" name="dates">
             <RangePicker />
           </Form.Item>
-          <Form.Item label="Время на задачу в часах" name="hours" rules={[{ required: false, message: "Введите количество часов" }]}>
-            <Input />
+          <Form.Item
+            label="Время на задачу в часах"
+            name="hours"
+            rules={[
+              ({ getFieldValue }) => ({
+                validator(_, value) {
+                  const dates = getFieldValue("dates");
+                  if ((!dates || dates.length === 0) && (!value || value === 0)) {
+                    return Promise.resolve();
+                  }
+                  if ((!dates || dates.length === 0) && value) {
+                    return Promise.reject("Пожалуйста, выберите даты перед вводом времени на задачу в часах");
+                  }
+                  // if (dates && dates.length > 0 && (!value || value === 0)) {
+                  //   return Promise.reject("Пожалуйста, введите время на задачу в часах");
+                  // }
+                  return Promise.resolve();
+                },
+              }),
+            ]}>
+            <InputNumber />
           </Form.Item>
           <Form.Item label="Ответственные" name="userIds">
             <Checkbox.Group>
@@ -305,7 +327,7 @@ const ColumnHeader = ({ column, handleOpenTaskModal, userId, boardId, editingCol
             onKeyDown={handleKeyDown}
           />
 
-          {(currentRole?.canAddTasks || isOwner) && (
+          {(currentRole?.name === "Администратор" || currentRole?.name === "Редактор" || isOwner) && (
             <Typography.Title level={4} style={{ margin: "0", padding: "0px" }}>
               <PlusOutlined onClick={() => handleOpenTaskModal(column?.id)} />
             </Typography.Title>
@@ -320,7 +342,7 @@ const ColumnHeader = ({ column, handleOpenTaskModal, userId, boardId, editingCol
               onClick={() => handleTitleClick(column.id)}>
               {column?.title}
             </Typography.Title>
-            {(currentRole?.canAddColumns || isOwner) && (
+            {(currentRole?.name === "Редактор" || currentRole?.name === "Администратор" || isOwner) && (
               <DeleteOutline
                 color="error"
                 style={{ cursor: "pointer" }}
@@ -339,7 +361,7 @@ const ColumnHeader = ({ column, handleOpenTaskModal, userId, boardId, editingCol
             )}
           </Flex>
 
-          {(currentRole?.canAddTasks || isOwner) && (
+          {(currentRole?.name === "Редактор" || currentRole?.name === "Администратор" || isOwner) && (
             <Flex style={{ alignItems: "center" }}>
               <Typography.Title level={4} style={{ margin: "0", padding: "0px" }}>
                 <PlusOutlined onClick={() => handleOpenTaskModal(column?.id)} />

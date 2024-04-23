@@ -99,37 +99,64 @@ const Users = () => {
           <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
             <Avatar src={user.avatar} size={64} shape="circle" />
             <h3 style={{ width: "200px", wordWrap: "break-word" }}>
-              <span>{user.lastName}</span> <span>{user.firstName}</span> <span>{user.middleName}</span>{" "}
-              {/* <span>{user.isOwner && <>isOwner</>}</span>*/}
+              <span>{user.lastName}</span> <span>{user.firstName}</span> <span>{user.middleName}</span> {user.isOwner && <span>Владелец</span>}
             </h3>
           </div>
-          {(isOwner && !user.isOwner) || (currentRole?.canEditRole && !user.isOwner && !user?.canEditRole && user.id !== userId) ? (
+          {console.log(user)}
+          {isOwner || (currentRole?.name === "Администратор" && !user.isOwner && user.roleName !== "Владелец") ? (
             <div style={{ display: "flex", gap: "10px" }}>
-              <Select
-                style={{ width: 120 }}
-                value={user.roleId || "guest"} // Устанавливаем значение по умолчанию "guest", если у пользователя нет роли
-                onChange={(value) => handleRoleChange(user.id, value, `${user.firstName} ${user.lastName}`)}>
-                <Select.Option key="guest" value="guest">
-                  Гость
-                </Select.Option>
-                {roles &&
-                  roles.map((role) => (
-                    <Select.Option key={role.id} value={role.id}>
-                      {role.name}
-                    </Select.Option>
-                  ))}
-              </Select>
-              {/* {user.isOwner && <>isOwner</>} */}
-              <Button type="primary" danger onClick={() => handleDeleteUser(user.id)}>
-                Удалить
-              </Button>
+              {currentRole?.name === "Администратор" && user.roleName === "Администратор" ? (
+                <span>{roles.find((role) => role.id === user.roleId)?.name}</span>
+              ) : user.isOwner ? (
+                <span>Владелец</span>
+              ) : (
+                <Select
+                  style={{ width: 120 }}
+                  value={user.roleId}
+                  onChange={(value) => handleRoleChange(user.id, value, `${user.firstName} ${user.lastName}`)}
+                  disabled={user.id === userId || (currentRole?.name === "Администратор" && user.isOwner)}>
+                  {roles &&
+                    roles.map((role) => {
+                      if (currentRole?.name === "Администратор") {
+                        if (role.name === "Редактор" || role.name === "Читатель") {
+                          return (
+                            <Select.Option key={role.id} value={role.id}>
+                              {role.name}
+                            </Select.Option>
+                          );
+                        }
+                      } else if (user.isOwner) {
+                        if (role.name !== "Администратор") {
+                          return (
+                            <Select.Option key={role.id} value={role.id}>
+                              {role.name}
+                            </Select.Option>
+                          );
+                        }
+                      } else {
+                        return (
+                          <Select.Option key={role.id} value={role.id}>
+                            {role.name}
+                          </Select.Option>
+                        );
+                      }
+                    })}
+                </Select>
+              )}
+              {(isOwner || (currentRole?.name === "Администратор" && user.roleName !== "Администратор" && user.roleName !== "Владелец")) &&
+                !user.isOwner && (
+                  <Button type="primary" danger onClick={() => handleDeleteUser(user.id)}>
+                    Удалить
+                  </Button>
+                )}
             </div>
           ) : (
-            <>{user.isOwner ? <>Админ</> : <span>{roles.find((role) => role.id === user.roleId)?.name || "Гость"}</span>}</>
+            <span>{user.isOwner ? "Владелец" : roles.find((role) => role.id === user.roleId)?.name}</span>
           )}
         </div>
       ))}
-      {(currentRole?.canAddUser || isOwner) && (
+
+      {(currentRole?.name === "Администратор" || isOwner) && (
         <Button
           onClick={() => setShowAddUserModal(true)}
           style={{

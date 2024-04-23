@@ -6,6 +6,8 @@ import SocketApi, { deleteNotification, fetchUser, getInvitations, getNotificati
 import "./Navbar.css";
 import { ArrowBack } from "@mui/icons-material";
 import { LogoutOutlined, UserOutlined, BellOutlined, DeleteOutlined } from "@ant-design/icons";
+import { Icon } from "@mui/material";
+import kanbanImage from "../../../../kanban.png"; // Импортируем изображение
 
 const handleLogoutClick = () => {
   localStorage.removeItem("token");
@@ -91,9 +93,14 @@ const Navbar = ({ backArrow }) => {
           <Menu.Item style={{ cursor: "default" }} key={notification.id} onClick={(e) => e.stopPropagation()}>
             <Flex>
               <span>
-                Вы назначены на задачу {notification?.task?.title} на доске <a href={`/boards/${notification?.board?.id}`}>{notification?.board?.title}</a>
+                Вы назначены на задачу {notification?.task?.title} на доске{" "}
+                <a href={`/boards/${notification?.board?.id}`}>{notification?.board?.title}</a>
               </span>
-              <DeleteOutlined onClick={()=>{deleteNotification(user?.id, notification?.id); queryClient.invalidateQueries("notificationsForUser")}}
+              <DeleteOutlined
+                onClick={() => {
+                  deleteNotification(user?.id, notification?.id);
+                  queryClient.invalidateQueries("notificationsForUser");
+                }}
                 className="actionFile"
                 style={{ cursor: "pointer", padding: "5px", borderRadius: "5px", fontSize: "20px", color: "#ff4d4f" }}
               />
@@ -137,7 +144,7 @@ const Navbar = ({ backArrow }) => {
             fontSize: "20px",
             fontWeight: 700,
           }}>
-          KANBAN
+          <span> KANBAN</span>
         </h1>
       </Flex>
 
