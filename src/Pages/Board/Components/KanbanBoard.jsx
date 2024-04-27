@@ -1,21 +1,19 @@
-import React, { useEffect, useState } from "react";
-import { Card, Row, Col, Typography, Modal, Form, Input, DatePicker, Checkbox, Select, Button, Flex, Badge, Dropdown, Menu, InputNumber } from "antd";
+import React, { useState } from "react";
+import { Card, Typography, Modal, Form, Input, DatePicker, Checkbox, Select, Button, Flex, InputNumber } from "antd";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
 import {
   addTask,
   deleteState,
   deleteTask,
-  fetchUser,
   getCurrentRole,
   getRoleByBoardId,
-  updateBoardWithColumns,
   updateStateTitle,
 } from "../../../api";
-import { DeleteFilled, PlusOutlined, PlusSquareOutlined } from "@ant-design/icons";
+import { PlusOutlined } from "@ant-design/icons";
 import "./KanbanBoard.css";
 import TaskCard from "./TaskCard";
 import { useQuery, useQueryClient } from "react-query";
-import { Delete, DeleteOutline } from "@mui/icons-material";
+import { DeleteOutline } from "@mui/icons-material";
 const { RangePicker } = DatePicker;
 
 const KanbanBoard = ({ columns, updateColumns, boardId, userId, users, priorities, selectedUsers, selectedPriorities }) => {
@@ -374,17 +372,4 @@ const ColumnHeader = ({ column, handleOpenTaskModal, userId, boardId, editingCol
   );
 };
 export default KanbanBoard;
-// <Card bodyStyle={{ padding: "15px" }} style={{ marginBottom: "10px", padding: "0px", width: "300px", height: "60px", alignItems: "center" }}>
-//   {isEditing ? (
-//     <Flex style={{ justifyContent: "space-between" }}>
-//       <Typography.Title level={4} style={{ margin: "0", padding: "0px" }} onClick={handleTitleClick}>
-//         <input type="text" value={newTitle} onChange={handleTitleChange} onBlur={handleTitleUpdate} />
-//       </Typography.Title>
-//       <Typography.Title level={4} style={{ margin: "0", padding: "0px" }}>
-//         <PlusOutlined onClick={() => handleOpenTaskModal(column?.id)} />
-//       </Typography.Title>
-//     </Flex>
-//   ) : (
 
-//   )}
-// </Card>

@@ -6,7 +6,7 @@ import { getCurrentRole, getRoleByBoardId } from "../../api";
 
 const HoursTask = ({ data }) => {
   if (!data) {
-    return <Table loading={true}></Table>
+    return <Table loading={true}></Table>;
   }
 
   // Функция для сортировки задач по id
@@ -42,7 +42,8 @@ const HoursTask = ({ data }) => {
       const diffDays = Math.ceil((new Date(endDate) - new Date(startDate)) / (1000 * 60 * 60 * 24)) + 1;
 
       const dayDistribution = {};
-      if (task.hours) { // Проверка на наличие количества часов
+      if (task.hours) {
+        // Проверка на наличие количества часов
         for (let i = 0; i < diffDays; i++) {
           const currentDate = new Date(startDate).getTime() + i * 24 * 60 * 60 * 1000;
           const currentDateString = new Date(currentDate).toDateString();
@@ -51,11 +52,12 @@ const HoursTask = ({ data }) => {
           totalHoursByDate[currentDateString] = (totalHoursByDate[currentDateString] || 0) + parseFloat(hours);
         }
       }
-
+      task.startDate ? moment(new Date(task.startDate).toDateString()).format("DD.MM.YYYY") : null;
+      task.endDate ? moment(new Date(task.endDate).toDateString()).format("DD.MM.YYYY") : null;
       dataSource.push({
         ...task,
-        startDate: moment(new Date(task.startDate).toDateString()).format("DD.MM.YYYY"),
-        endDate: moment(new Date(task.endDate).toDateString()).format("DD.MM.YYYY"),
+        startDate: task.startDate ? moment(new Date(task.startDate).toDateString()).format("DD.MM.YYYY") : null,
+        endDate: task.endDate ? moment(new Date(task.endDate).toDateString()).format("DD.MM.YYYY") : null,
         responsible: task.users.map((user) => `${user.firstName} ${user.lastName}`).join(", "),
         dayDistribution,
         key: task.id,
@@ -111,7 +113,7 @@ const HoursTask = ({ data }) => {
       <Table
         dataSource={dataSource}
         columns={columns}
-        pagination={false} 
+        pagination={false}
         bordered
         summary={() => (
           <Table.Summary.Row>
