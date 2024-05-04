@@ -113,7 +113,7 @@ const Boards = () => {
                               e.stopPropagation();
                               handleToggleArchived(board.id);
                             }}
-                            icon={<ArchiveOutlined style={{ color: "lightblue" }} />}
+                            icon={<ArchiveOutlined color="primary" />}
                           />
                         </div>
                       </div>
@@ -146,7 +146,7 @@ const Boards = () => {
                     e.stopPropagation();
                     handleToggleArchived(board.id);
                   }}
-                  icon={<ArchiveOutlined style={{ color: "lightblue" }} />}
+                  icon={<ArchiveOutlined color="primary" />}
                 />
               </Flex>
             }

@@ -92,12 +92,12 @@ const GanttChart = ({ data }) => {
             moment(date).format("DD.MM.YYYY, HH.mm.ss") <= record.actualEndDate &&
             moment(date).format("DD.MM.YYYY, HH.mm.ss") > record.startDate
           ) {
-            backgroundColor = "#f5222d";
+            backgroundColor = "#d32f2f ";
             if (isTaskDate) {
               backgroundColor = "#52c41a";
             }
           } else if (isTaskDate) {
-            backgroundColor = "lightblue"; // Серый цвет для остальных дат
+            backgroundColor = "#AAAAAA"; // Серый цвет для остальных дат
             if (isTaskDate && record.isCompleted) {
               backgroundColor = "#52c41a";
             }

@@ -84,7 +84,7 @@ const FormComment = ({ userId, boardId, stateId, taskId, currentRole }) => {
       </Form.Item>
       {charCountWarning && <p style={{ color: "red" }}>Превышено допустимое количество символов (255)</p>}
       <Form.Item>
-        <Button type="primary" htmlType="submit" style={{ backgroundColor: "#519839" }}>
+        <Button type="primary" htmlType="submit">
           Добавить комментарий
         </Button>
       </Form.Item>

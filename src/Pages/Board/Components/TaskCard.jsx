@@ -167,70 +167,70 @@ const TaskCard = ({ task, isDragging, deleteTask, userId, boardId, usersBoard })
           style={{
             opacity: task?.isCompleted ? 0.6 : 1, // Уменьшаем немного прозрачность для дизейбленной карточки
           }}>
-                  <Card
-          title={
-            <>
-              {(isOwner || task.users.some((user) => user.id === userId) || task.creater === userId) && (
+          <Card
+            title={
+              <>
                 <Checkbox
                   className="checkbox"
                   type="checkbox"
                   onChange={handleTaskCompletion}
                   checked={task?.isCompleted}
                   onClick={(e) => e.stopPropagation()}
+                  disabled={
+                    !(isOwner || task.users.some((user) => user.id === userId) || (task.creater === userId && currentRole.name === "Редактор"))
+                  }
                 />
-              )}
 
-              <span style={{ marginLeft: "5px" }}>{task?.title}</span>
-            </>
-          }
-          style={{
-            width: 300,
-            boxShadow: isDragging ? "0 0 10px rgba(0,0,0,0.5)" : "0 0 2px rgba(0,0,0,0.2)",
-            transition: "background-color 0.2s, box-shadow 0.2s",
-            backgroundColor: !task?.isCompleted ? "#ffffff" : "#f3f3f3", // Меняем цвет фона, чтобы выделить что задача завершена
-            opacity: task?.isCompleted ? 0.6 : 1, // Уменьшаем немного прозрачность для дизейбленной карточки
-          }}
-          onClick={showDrawer}>
-          <div>
-            {task?.startDate && <p>Начало: {moment(task?.startDate).locale("ru").format("DD.MM.YYYY")}</p>}
-            {task?.endDate && <p>Конец: {moment(task?.endDate).locale("ru").format("DD.MM.YYYY")}</p>}
-          </div>
-          {subTasks?.length > 0 && (
-            <>
-              <Progress
-                percent={subTasks.length > 0 ? ((subTasks.filter((subtask) => subtask.isCompleted).length / subTasks.length) * 100).toFixed(1) : 0}
-              />
-            </>
-          )}
+                <span style={{ marginLeft: "5px" }}>{task?.title}</span>
+              </>
+            }
+            style={{
+              width: 300,
+              boxShadow: isDragging ? "0 0 10px rgba(0,0,0,0.5)" : "0 0 2px rgba(0,0,0,0.2)",
+              transition: "background-color 0.2s, box-shadow 0.2s",
+              backgroundColor: !task?.isCompleted ? "#ffffff" : "#f3f3f3", // Меняем цвет фона, чтобы выделить что задача завершена
+              opacity: task?.isCompleted ? 0.6 : 1, // Уменьшаем немного прозрачность для дизейбленной карточки
+            }}
+            onClick={showDrawer}>
+            <div>
+              {task?.startDate && <p>Начало: {moment(task?.startDate).locale("ru").format("DD.MM.YYYY")}</p>}
+              {task?.endDate && <p>Конец: {moment(task?.endDate).locale("ru").format("DD.MM.YYYY")}</p>}
+            </div>
+            {subTasks?.length > 0 && (
+              <>
+                <Progress
+                  percent={subTasks.length > 0 ? ((subTasks.filter((subtask) => subtask.isCompleted).length / subTasks.length) * 100).toFixed(1) : 0}
+                />
+              </>
+            )}
 
-          {/* <SubTasksList subTasks={subTasks}></SubTasksList> */}
-          {task?.users && task?.users.length > 0 && (
-            <>
-              <Divider orientation="left">Ответственные</Divider>
-              <div style={{ display: "flex" }}>
-                {task.users.map((user, index) => (
-                  <Avatar key={user.id} style={{ backgroundColor: `${stringToColor(user.firstName)}` }}>
-                    {user.firstName}
-                  </Avatar>
-                ))}
-              </div>
-            </>
-          )}
-        </Card>
+            {/* <SubTasksList subTasks={subTasks}></SubTasksList> */}
+            {task?.users && task?.users.length > 0 && (
+              <>
+                <Divider orientation="left">Ответственные</Divider>
+                <div style={{ display: "flex" }}>
+                  {task.users.map((user, index) => (
+                    <Avatar key={user.id} style={{ backgroundColor: `${stringToColor(user.firstName)}` }}>
+                      {user.firstName}
+                    </Avatar>
+                  ))}
+                </div>
+              </>
+            )}
+          </Card>
         </Badge.Ribbon>
       ) : (
         <Card
           title={
             <>
-              {(isOwner || task.users.some((user) => user.id === userId) || task.creater === userId) && (
-                <Checkbox
-                  className="checkbox"
-                  type="checkbox"
-                  onChange={handleTaskCompletion}
-                  checked={task?.isCompleted}
-                  onClick={(e) => e.stopPropagation()}
-                />
-              )}
+              <Checkbox
+                className="checkbox"
+                type="checkbox"
+                onChange={handleTaskCompletion}
+                checked={task?.isCompleted}
+                onClick={(e) => e.stopPropagation()}
+                disabled={!(isOwner || task.users.some((user) => user.id === userId) || (task.creater === userId && currentRole.name === "Редактор"))}
+              />
 
               <span style={{ marginLeft: "5px" }}>{task?.title}</span>
             </>
@@ -308,9 +308,10 @@ const TaskCard = ({ task, isDragging, deleteTask, userId, boardId, usersBoard })
           handleSubTaskCompletion={handleSubTaskCompletion}
           handleAddSubTask={handleAddSubTask}
         />
-        {(currentRole?.name === "Администратор" || task.creater === userId || isOwner || task.users.some((user) => user.id === userId)) && (
-          <FileComponent currentRole={currentRole} taskId={task?.id} />
-        )}
+        {(currentRole?.name === "Администратор" ||
+          (task.creater === userId && currentRole.name === "Редактор") ||
+          isOwner ||
+          task.users.some((user) => user.id === userId)) && <FileComponent currentRole={currentRole} taskId={task?.id} />}
 
         <Comments
           currentRole={currentRole}
@@ -318,7 +319,12 @@ const TaskCard = ({ task, isDragging, deleteTask, userId, boardId, usersBoard })
           boardId={boardId}
           stateId={task.stateId}
           taskId={task.id}
-          canComments={task.users.some((user) => user.id === userId) | (currentRole?.name === "Администратор") || task.creater === userId}></Comments>
+          canComments={
+            task.users.some((user) => user.id === userId) ||
+            currentRole?.name === "Администратор" ||
+            (task.creater === userId && currentRole.name === "Редактор") ||
+            isOwner
+          }></Comments>
       </Drawer>
     </div>
   );
@@ -369,7 +375,7 @@ const TaskHeader = ({ task, userId, boardId, handleArchiveTask, showDeleteConfir
   console.log(isOwner || currentRole?.name === "Администратор" || task.creater === userId);
   return (
     <div style={{ justifyContent: "space-between", display: "flex", alignItems: "center" }}>
-      {isEditing && (isOwner || task.creater === userId || currentRole.name === "Администратор") ? (
+      {isEditing && (isOwner || (task.creater === userId && currentRole.name === "Редактор") || currentRole.name === "Администратор") ? (
         <>
           <Input
             ref={titleInputRef}
@@ -398,8 +404,9 @@ const TaskHeader = ({ task, userId, boardId, handleArchiveTask, showDeleteConfir
                   handleArchiveTask(userId, boardId, task.stateId, task.id);
                 }}></ArchiveOutlined>
             )}
-
-            <DeleteOutline color="error" style={{ cursor: "pointer" }} onClick={showDeleteConfirm}></DeleteOutline>
+            {(isOwner || currentRole?.name === "Администратор" || task.creater === userId) && (
+              <DeleteOutline color="error" style={{ cursor: "pointer" }} onClick={showDeleteConfirm}></DeleteOutline>
+            )}
           </div>
         </>
       )}
@@ -474,7 +481,7 @@ const TaskInfo = ({ task, stringToColor, userId, boardId, usersBoard, currentRol
                 </span>
               </Flex>
 
-              {(isOwner || task.creater === userId || currentRole.name === "Администратор") && (
+              {(isOwner || (task.creater === userId && currentRole.name === "Редактор") || currentRole.name === "Администратор") && (
                 <Checkbox checked={isUserResponsible} onChange={(e) => handleChangeTaskUsers(user.id, e.target.checked)} />
               )}
             </Flex>
@@ -488,7 +495,7 @@ const TaskInfo = ({ task, stringToColor, userId, boardId, usersBoard, currentRol
     <>
       {task.dependentTask && <>Родительская задача: {task?.dependentTask?.title}</>}
       <Divider orientation="left">Описание</Divider>
-      {isEditingDesc && (isOwner || task.creater === userId || currentRole.name === "Администратор") ? (
+      {isEditingDesc && (isOwner || (task.creater === userId && currentRole.name === "Редактор") || currentRole.name === "Администратор") ? (
         <>
           <Input.TextArea
             ref={descInputRef}
@@ -507,17 +514,17 @@ const TaskInfo = ({ task, stringToColor, userId, boardId, usersBoard, currentRol
       <Divider orientation="left">
         <CalendarOutlined /> Срок выполнения
       </Divider>
-     
-        <Flex style={{ alignItems: "center" }}>
-          {isEditingDate && (isOwner || task.creater === userId || currentRole.name === "Администратор") ? (
-            <>
-              <DatePicker.RangePicker ref={dateInputRef} value={formData.selectedDates} onChange={handleRangeChange} />
-              <Button style={{ marginLeft: "5px" }} onClick={handleUpdateTaskDate}>
-                <CheckOutlined />
-              </Button>
-            </>
-          ) : (
-            <>
+
+      <Flex style={{ alignItems: "center" }}>
+        {isEditingDate && (isOwner || (task.creater === userId && currentRole.name === "Редактор") || currentRole.name === "Администратор") ? (
+          <>
+            <DatePicker.RangePicker ref={dateInputRef} value={formData.selectedDates} onChange={handleRangeChange} />
+            <Button style={{ marginLeft: "5px" }} onClick={handleUpdateTaskDate}>
+              <CheckOutlined />
+            </Button>
+          </>
+        ) : (
+          <>
             {task.startDate && task.endDate ? (
               <>
                 <CalendarOutlined /> {moment(task.startDate).locale("ru").format("DD.MM.YYYY")} -{" "}
@@ -526,13 +533,13 @@ const TaskInfo = ({ task, stringToColor, userId, boardId, usersBoard, currentRol
             ) : (
               <span>Сроков нет</span>
             )}
-            {isOwner || task.creater === userId || currentRole.name === "Администратор" ? (
+            {isOwner || (task.creater === userId && currentRole.name === "Редактор") || currentRole.name === "Администратор" ? (
               <EditOutlined onClick={() => setIsEditingDate(true)} />
             ) : null}
           </>
-          )}
-        </Flex>
-   
+        )}
+      </Flex>
+
       <Divider orientation="left">
         <UserOutlined /> Ответственные
       </Divider>
@@ -547,7 +554,7 @@ const TaskInfo = ({ task, stringToColor, userId, boardId, usersBoard, currentRol
           </>
         )}
 
-        {(isOwner || task.creater === userId || currentRole.name === "Администратор") && (
+        {(isOwner || (task.creater === userId && currentRole.name === "Редактор") || currentRole.name === "Администратор") && (
           <Flex style={{ alignItems: "center" }}>
             <Dropdown overlay={dropdownData} trigger={["click"]}>
               <Avatar style={{ cursor: "pointer" }} onClick={(e) => e.preventDefault()} icon={<AddOutlined />}></Avatar>
@@ -586,27 +593,34 @@ const SubTasksList = ({ subTasks, handleSubTaskCompletion, handleAddSubTask, cur
         renderItem={(subtask) => (
           <List.Item key={subtask.id}>
             <Flex>
-              {(isOwner || task.users.some((user) => user.id === userId) || task.creater === userId || currentRole.name === "Администратор") && (
-                <Checkbox
-                  className="checkbox"
-                  type="checkbox"
-                  onChange={() => {
-                    handleSubTaskCompletion(subtask);
-                  }}
-                  checked={subtask?.isCompleted}></Checkbox>
-              )}
+              <Checkbox
+                className="checkbox"
+                type="checkbox"
+                onChange={() => {
+                  handleSubTaskCompletion(subtask);
+                }}
+                checked={subtask?.isCompleted}
+                disabled={
+                  !(
+                    isOwner ||
+                    task.users.some((user) => user.id === userId) ||
+                    (task.creater === userId && currentRole.name === "Редактор") ||
+                    currentRole.name === "Администратор"
+                  )
+                }
+              />
               <span>{subtask.title}</span>
             </Flex>
           </List.Item>
         )}
       />
-      {(task.creater === userId || currentRole.name === "Администратор" || isOwner) && (
+      {((task.creater === userId && currentRole.name === "Редактор") || currentRole.name === "Администратор" || isOwner) && (
         <Form onFinish={handleAddSubTask}>
           <Form.Item name="subtaskName" rules={[{ required: true, message: "Введите название подзадачи" }]}>
             <Input placeholder="Введите название подзадачи" />
           </Form.Item>
           <Form.Item>
-            <Button style={{ backgroundColor: "#519839" }} type="primary" htmlType="submit">
+            <Button type="primary" htmlType="submit">
               Добавить подзадачу
             </Button>
           </Form.Item>

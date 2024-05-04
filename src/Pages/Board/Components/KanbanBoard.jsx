@@ -1,14 +1,7 @@
 import React, { useState } from "react";
 import { Card, Typography, Modal, Form, Input, DatePicker, Checkbox, Select, Button, Flex, InputNumber } from "antd";
 import { DragDropContext, Droppable, Draggable } from "react-beautiful-dnd";
-import {
-  addTask,
-  deleteState,
-  deleteTask,
-  getCurrentRole,
-  getRoleByBoardId,
-  updateStateTitle,
-} from "../../../api";
+import { addState, addTask, deleteState, deleteTask, getCurrentRole, getRoleByBoardId, updateStateTitle } from "../../../api";
 import { PlusOutlined } from "@ant-design/icons";
 import "./KanbanBoard.css";
 import TaskCard from "./TaskCard";
@@ -23,6 +16,15 @@ const KanbanBoard = ({ columns, updateColumns, boardId, userId, users, prioritie
   const { data: isOwner, isLoading: ownerLoading } = useQuery("isOwner", () => getRoleByBoardId(userId, boardId));
 
   const [editingColumnId, setEditingColumnId] = useState(null);
+  const handleAddState = async () => {
+    try {
+      const defaultColumns = [{ title: "Backlog" }, { title: "В разработке" }, { title: "Тестирование" }, { title: "Готово" }];
+      const newColumns = await Promise.all(defaultColumns.map((column) => addState(column, userId, boardId)));
+      queryClient.setQueryData(["columns", userId, boardId], (prevColumns) => [...prevColumns, ...newColumns]);
+    } catch (error) {
+      console.error(error);
+    }
+  };
   const onDragEnd = (result) => {
     const { source, destination } = result;
 
@@ -126,6 +128,18 @@ const KanbanBoard = ({ columns, updateColumns, boardId, userId, users, prioritie
   if (!ownerLoading || !currentRoleLoading) {
   }
   console.log(columns);
+  if ((!columns || columns.length === 0) && (isOwner || currentRole.name === "Администратор")) {
+    return (
+      <div style={{ height: "100%", display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <Card title="На доске пока что нет столбцов состояний">
+          <p>Вы можете добавить базовые секции (backlog, в разработке, тестирование, готово), чтобы начать работу.</p>
+          <Button type="primary" onClick={handleAddState}>
+            Добавить
+          </Button>
+        </Card>
+      </div>
+    );
+  }
   return (
     <>
       <DragDropContext onDragEnd={onDragEnd}>
@@ -158,7 +172,9 @@ const KanbanBoard = ({ columns, updateColumns, boardId, userId, users, prioritie
                                 draggableId={`${task.id}`}
                                 index={index}
                                 isDragDisabled={
-                                  !isOwner && task.creater !== userId || currentRole.name === "Читатель" || selectedUsers.length > 0 || selectedPriorities.length > 0
+                                  (!isOwner && task.creater !== userId &&  task.users.some((user) => user.id !== userId) ) ||           
+                                  selectedUsers.length > 0 ||
+                                  selectedPriorities.length > 0
                                 }>
                                 {(provided, snapshot) => (
                                   <div ref={provided.innerRef} {...provided.draggableProps} {...provided.dragHandleProps}>
@@ -372,4 +388,3 @@ const ColumnHeader = ({ column, handleOpenTaskModal, userId, boardId, editingCol
   );
 };
 export default KanbanBoard;
-

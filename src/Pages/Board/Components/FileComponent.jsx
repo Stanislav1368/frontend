@@ -9,11 +9,12 @@ import "moment/locale/ru"; // Импорт локализации "ru" для Mo
 moment.locale("ru"); // Установка локализации на "ru"
 
 const FileComponent = ({ taskId, currentRole }) => {
+  
   const queryClient = useQueryClient();
   const [uploading, setUploading] = useState(false);
 
   const { data: files, isLoading } = useQuery(["files", taskId], () => fetchFiles(taskId));
-
+  console.log(files)
   const handleFileUpload = async (file) => {
     console.log(file);
     try {
@@ -40,7 +41,7 @@ const FileComponent = ({ taskId, currentRole }) => {
     }
   };
   const renderFileContent = (file) => {
-
+    console.log(file)
     if (file.type.startsWith("image")) {
       return <Image style={{ height: "100%", width: "130px" }} src={`${BASE_URL}/files/download/${file.id}`} alt={file.name} />;
     } else {

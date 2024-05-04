@@ -101,7 +101,7 @@ const Board = () => {
 
   const { data: usersBoard } = useQuery(["users", board?.id], () => fetchUsersByBoard(boardId));
   const { data: priorities } = useQuery(["priorities", board?.id], () => getPriorities(boardId));
-
+  console.log(usersBoard)
   const [openAddSectionModal, setOpenAddSectionModal] = useState(false);
   const [openAddUserModal, setOpenAddUserModal] = useState(false);
   const [openAddPriorityModal, setOpenAddPriorityModal] = useState(false);
@@ -116,6 +116,7 @@ const Board = () => {
   };
 
   const handleAddState = async (values) => {
+    console.log(values)
     try {
       setOpenAddSectionModal(false);
       const newColumn = await addState(values, userId, board.id);

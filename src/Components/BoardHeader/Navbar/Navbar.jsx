@@ -91,7 +91,7 @@ const Navbar = ({ backArrow }) => {
         ?.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)) // Сортировка уведомлений по дате создания в обратном порядке
         .map((notification) => (
           <Menu.Item style={{ cursor: "default" }} key={notification.id} onClick={(e) => e.stopPropagation()}>
-            <Flex>
+            <Flex style={{alignItems: "center", justifyContent: "space-between"}}>
               <span>
                 Вы назначены на задачу {notification?.task?.title} на доске{" "}
                 <a href={`/boards/${notification?.board?.id}`}>{notification?.board?.title}</a>

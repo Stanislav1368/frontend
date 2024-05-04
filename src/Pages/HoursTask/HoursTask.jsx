@@ -8,7 +8,7 @@ const HoursTask = ({ data }) => {
   if (!data) {
     return <Table loading={true}></Table>;
   }
-
+  console.log(data)
   // Функция для сортировки задач по id
   const sortTasksById = (tasks) => {
     return tasks.sort((a, b) => a.id - b.id);

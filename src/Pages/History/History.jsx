@@ -32,7 +32,7 @@ const History = ({}) => {
     <Layout style={{ height: "100%", margin: "0px" }}>
       <Layout.Content>
         <div style={{ padding: "0px 24px" }}>
-          <Typography.Title level={2}>История</Typography.Title>
+
           <List
             dataSource={filteredNotifications}
             renderItem={(notification) => (
