@@ -34,6 +34,7 @@ import {
   Tag,
   Dropdown,
   message,
+  Select,
 } from "antd";
 import Comments from "../../../Components/Comments";
 import {
@@ -49,7 +50,7 @@ import {
 } from "../../../api";
 import FileComponent from "./FileComponent";
 
-const TaskCard = ({ task, isDragging, deleteTask, userId, boardId, usersBoard }) => {
+const TaskCard = ({ task, isDragging, deleteTask, userId, boardId, usersBoard, priorities }) => {
   const queryClient = useQueryClient();
   const [open, setOpen] = useState(false);
   const [form] = Form.useForm();
@@ -61,7 +62,7 @@ const TaskCard = ({ task, isDragging, deleteTask, userId, boardId, usersBoard })
 
   const [startDate, setStartDate] = useState(task.startDate);
   const [endDate, setEndDate] = useState(task.endDate);
-  console.log(task.subTasks);
+  console.log(priorities);
   const { data: currentRole, isLoading: currentRoleLoading } = useQuery("currentRole", () => getCurrentRole(userId, boardId), {
     enabled: !!userId,
     refetchOnWindowFocus: false,
@@ -298,6 +299,7 @@ const TaskCard = ({ task, isDragging, deleteTask, userId, boardId, usersBoard })
           userId={userId}
           boardId={boardId}
           usersBoard={usersBoard}
+          priorities={priorities}
         />
         <SubTasksList
           task={task}
@@ -415,7 +417,7 @@ const TaskHeader = ({ task, userId, boardId, handleArchiveTask, showDeleteConfir
 };
 
 // Компонент с информацией о задаче
-const TaskInfo = ({ task, stringToColor, userId, boardId, usersBoard, currentRole, isOwner }) => {
+const TaskInfo = ({ task, stringToColor, userId, boardId, usersBoard, currentRole, isOwner, priorities }) => {
   const queryClient = useQueryClient();
   const [isEditingDesc, setIsEditingDesc] = useState(false);
   const [isEditingDate, setIsEditingDate] = useState(false);
@@ -429,7 +431,6 @@ const TaskInfo = ({ task, stringToColor, userId, boardId, usersBoard, currentRol
   const dateInputRef = useRef(null);
 
   const handleUpdateTaskDesc = async (desc) => {
-    console.log(desc);
     await updateTask(userId, boardId, task.stateId, task.id, { description: formData.newDesc });
     queryClient.invalidateQueries(["columns"]);
     setIsEditingDesc(false);
@@ -456,6 +457,7 @@ const TaskInfo = ({ task, stringToColor, userId, boardId, usersBoard, currentRol
     await updateTaskUsers(userId, boardId, task.stateId, task.id, isChecked);
     queryClient.invalidateQueries(["columns"]);
   };
+  const [selectedPriority, setSelectedPriority] = useState(null);
   useEffect(() => {
     if (isEditingDesc && descInputRef.current) {
       descInputRef.current.focus();
@@ -464,7 +466,10 @@ const TaskInfo = ({ task, stringToColor, userId, boardId, usersBoard, currentRol
       dateInputRef.current.focus();
     }
   }, [isEditingDesc, isEditingDate]);
-
+  const [replaceLabelVisible, setReplaceLabelVisible] = useState(false);
+  const toggleReplaceLabel = () => {
+    setReplaceLabelVisible(!replaceLabelVisible);
+  };
   const dropdownData = (
     <Menu style={{ width: "300px", borderRadius: 0 }}>
       {usersBoard.map((user) => {
@@ -490,7 +495,30 @@ const TaskInfo = ({ task, stringToColor, userId, boardId, usersBoard, currentRol
       })}
     </Menu>
   );
-  console.log(task);
+  useEffect(() => {
+    // Проверяем, есть ли у задачи метка
+    if (task && task.priority) {
+      setSelectedPriority(task.priority.id); // Устанавливаем id текущей метки в selectedPriority
+    }
+  }, [task]);
+  const handleReplaceLabel = async () => {
+    try {
+      // Проверяем, что выбрана метка
+      if (!selectedPriority) {
+        // Если метка не выбрана, вы можете показать сообщение об ошибке или выполнить другие действия
+        return;
+      }
+
+      // Вызываем функцию updateTask с необходимыми параметрами
+      await updateTask(userId, boardId, task.stateId, task.id, { priorityId: selectedPriority });
+      queryClient.invalidateQueries(["columns"]);
+      toggleReplaceLabel();
+    } catch (error) {
+      // Обработка ошибок, если они произошли при обновлении задачи
+      console.error("Error updating task:", error);
+      // Возможно, здесь вы захотите показать пользователю сообщение об ошибке или выполнить другие действия
+    }
+  };
   return (
     <>
       {task.dependentTask && <>Родительская задача: {task?.dependentTask?.title}</>}
@@ -509,8 +537,11 @@ const TaskInfo = ({ task, stringToColor, userId, boardId, usersBoard, currentRol
           </Button>
         </>
       ) : (
-        <p onClick={() => setIsEditingDesc(true)}>{task.description}</p>
+        <p onClick={() => setIsEditingDesc(true)}>
+          {task.description} {task.description.length === 0 && <Button>Добавить описание...</Button>}
+        </p>
       )}
+
       <Divider orientation="left">
         <CalendarOutlined /> Срок выполнения
       </Divider>
@@ -563,10 +594,42 @@ const TaskInfo = ({ task, stringToColor, userId, boardId, usersBoard, currentRol
         )}
       </Flex>
       <Divider orientation="left">Метки</Divider>
-      {task?.priority && (
-        <Tag key={task.priority.name} color={task.priority.color}>
-          {task.priority.name}
-        </Tag>
+
+      {!replaceLabelVisible ? (
+        <>
+          {task?.priority && (
+            <Tag
+              key={task.priority.name}
+              color={task.priority.color}
+              style={{ cursor: "pointer" }}
+              closable
+              onClose={async (e) => {
+                e.stopPropagation();
+                await updateTask(userId, boardId, task.stateId, task.id, { priorityId: null });
+                queryClient.invalidateQueries(["columns"]);
+                message.success(`Метка для задачи "${task.title}" успешно удалена`);
+              }}>
+              {task.priority.name}
+            </Tag>
+          )}
+          <Button type="link" onClick={toggleReplaceLabel}>
+            Поменять метку
+          </Button>
+        </>
+      ) : (
+        <Flex style={{ gap: "8px" }}>
+          <Select defaultValue={task.priority?.name} onChange={(value) => setSelectedPriority(value)} style={{ width: 120 }}>
+            {priorities.map((priority) => (
+              <Option key={priority.id} value={priority.id}>
+                {priority.name}
+              </Option>
+            ))}
+          </Select>
+          <Button type="primary" onClick={handleReplaceLabel}>
+            Поменять метку
+          </Button>
+          <Button onClick={toggleReplaceLabel}>Отмена</Button>
+        </Flex>
       )}
     </>
   );

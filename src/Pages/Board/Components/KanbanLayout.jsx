@@ -8,6 +8,7 @@ import { useMutation, useQuery, useQueryClient } from "react-query";
 import SocketApi, { deleteBoard, deleteUserFromBoard, getCurrentRole, getNotificationsForBoard, getRoleByBoardId, updateBoard } from "../../../api";
 import { MoreVert, NotificationsOutlined } from "@mui/icons-material";
 import moment from "moment";
+import TagList from "./TagList";
 
 const KanbanLayout = ({
   board,
@@ -190,11 +191,11 @@ const KanbanLayout = ({
           </Avatar.Group>
         </Flex>
       </Header>
-      <div style={{ display: "flex", padding: "0px 10px 10px 10px", gap: "5px", justifyContent: "space-between", flexWrap: "wrap" }}>
+      <div style={{ display: "flex", padding: "0px 10px 5px 10px", gap: "5px", justifyContent: "space-between", flexWrap: "wrap" }}>
         <Flex style={{ gap: "5px", flex: "1" }}>
           {(currentRole?.name === "Администратор" || isOwner) && (
-            <Button
-              style={{ textAlign: "left", padding: "4px 10px" }}
+            <Button size="small"
+              
               onClick={() => {
                 setOpenAddSectionModal(true);
               }}>
@@ -203,12 +204,13 @@ const KanbanLayout = ({
           )}
 
           {(currentRole?.name === "Редактор" || isOwner) && (
-            <Button
-              onClick={() => {
-                setOpenAddPriorityModal(true);
-              }}>
-              Метки
-            </Button>
+            // <Button
+            //   onClick={() => {
+            //     setOpenAddPriorityModal(true);
+            //   }}>
+            //   Метки
+            // </Button>
+            <TagList boardId={boardId}></TagList>
           )}
         </Flex>
 

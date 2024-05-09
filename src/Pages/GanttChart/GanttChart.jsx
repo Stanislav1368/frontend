@@ -104,7 +104,7 @@ const GanttChart = ({ data }) => {
           }
 
           return {
-            children: <div style={{maxHeight: "40px", minHeight: "40px"}}/>,
+            children: <div style={{ maxHeight: "40px", minHeight: "40px" }} />,
             props: {
               style: {
                 background: backgroundColor,
@@ -149,6 +149,20 @@ const GanttChart = ({ data }) => {
   // Отображаем компонент
   return (
     <div style={{ overflowX: "auto" }}>
+      <div style={{ margin: "10px", display: "flex", gap: "20px" }}>
+        <div style={{ display: "flex", alignItems: "center", marginBottom: "5px" }}>
+          <div style={{ width: "20px", height: "20px", backgroundColor: "#52c41a", marginRight: "5px" }}></div>
+          <span>Задача завершена вовремя или раньше</span>
+        </div>
+        <div style={{ display: "flex", alignItems: "center", marginBottom: "5px" }}>
+          <div style={{ width: "20px", height: "20px", backgroundColor: "#d32f2f", marginRight: "5px" }}></div>
+          <span>Время между предполагаемой датой завершения и фактической датой завершения</span>
+        </div>
+        <div style={{ display: "flex", alignItems: "center" }}>
+          <div style={{ width: "20px", height: "20px", backgroundColor: "#AAAAAA", marginRight: "5px" }}></div>
+          <span>Задача не завершена</span>
+        </div>
+      </div>
       <Table columns={columns} dataSource={dataSource} bordered pagination={false} scroll={{ x: "max-content" }} />
     </div>
   );

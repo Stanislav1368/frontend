@@ -66,11 +66,11 @@ const Board = () => {
   });
 
   const createPriorityForBoard = async (values) => {
+    console.log(values);
     try {
       values.color = hexString;
 
       CreatePriorityMutation.mutate(values);
-      // setOpenAddPriorityModal(false);
     } catch (error) {
       console.error(error);
     }
@@ -101,7 +101,7 @@ const Board = () => {
 
   const { data: usersBoard } = useQuery(["users", board?.id], () => fetchUsersByBoard(boardId));
   const { data: priorities } = useQuery(["priorities", board?.id], () => getPriorities(boardId));
-  console.log(usersBoard)
+  console.log(usersBoard);
   const [openAddSectionModal, setOpenAddSectionModal] = useState(false);
   const [openAddUserModal, setOpenAddUserModal] = useState(false);
   const [openAddPriorityModal, setOpenAddPriorityModal] = useState(false);
@@ -116,7 +116,7 @@ const Board = () => {
   };
 
   const handleAddState = async (values) => {
-    console.log(values)
+    console.log(values);
     try {
       setOpenAddSectionModal(false);
       const newColumn = await addState(values, userId, board.id);
@@ -229,45 +229,33 @@ const Board = () => {
           </Form.Item>
         </Form>
       </Modal>
-      <Modal
-        footer={null}
-        title="Новая метка"
-        open={openAddPriorityModal}
-        onOk={() => setOpenAddPriorityModal(false)}
-        onCancel={() => setOpenAddPriorityModal(false)}>
-        <>
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "repeat(auto-fill, minmax(100px, 1fr))",
-              gridGap: "10px",
-              margin: "10px 0",
-            }}>
-            {priorities?.map((priority) => (
-              <Tag key={`${priority?.id}`} color={`${priority?.color}`}>
-                {`${priority?.name}`}
-              </Tag>
-            ))}
-          </div>
+      <Modal footer={null} title="Новая метка" visible={openAddPriorityModal} onCancel={() => setOpenAddPriorityModal(false)}>
+        <div style={{ marginBottom: "20px" }}>
+          {priorities?.map((priority) => (
+            <Tag key={`${priority?.id}`} color={`${priority?.color}`}>
+              {`${priority?.name}`}
+            </Tag>
+          ))}
+        </div>
 
-          <Form form={form} onFinish={createPriorityForBoard} initialValues={{ color: "#8d2d1d" }}>
-            <Form.Item name="name" label="Наименование" rules={[{ required: true, message: "Пожалуйста, введите наименование!" }]}>
-              <Input />
-            </Form.Item>
+        <Form form={form} onFinish={createPriorityForBoard} initialValues={{ color: "#8d2d1d" }}>
+          <Form.Item name="name" label="Наименование" rules={[{ required: true, message: "Пожалуйста, введите наименование!" }]}>
+            <Input />
+          </Form.Item>
 
-            <Form.Item name="color" label="Цвет">
-              <ColorPicker format={formatHex} value={colorHex} onChange={setColorHex} onFormatChange={setFormatHex} />
-            </Form.Item>
-            <Form.Item>
-              <Space>
-                <Button type="primary" htmlType="submit">
-                  Создать приоритет
-                </Button>
-                <Button onClick={() => setOpenAddPriorityModal(false)}>Отмена</Button>
-              </Space>
-            </Form.Item>
-          </Form>
-        </>
+          <Form.Item name="color" label="Цвет">
+            <ColorPicker format={formatHex} value={colorHex} onChange={setColorHex} onFormatChange={setFormatHex} />
+          </Form.Item>
+
+          <Form.Item>
+            <Space>
+              <Button type="primary" htmlType="submit">
+                Создать приоритет
+              </Button>
+              <Button onClick={() => setOpenAddPriorityModal(false)}>Отмена</Button>
+            </Space>
+          </Form.Item>
+        </Form>
       </Modal>
     </>
   );

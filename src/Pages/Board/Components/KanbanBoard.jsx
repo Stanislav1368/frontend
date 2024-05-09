@@ -186,6 +186,7 @@ const KanbanBoard = ({ columns, updateColumns, boardId, userId, users, prioritie
                                         userId={userId}
                                         boardId={boardId}
                                         usersBoard={users}
+                                        priorities={priorities}
                                       />
                                     )}
                                   </div>

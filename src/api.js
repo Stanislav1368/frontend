@@ -198,17 +198,23 @@ export const getTask = async (userId, boardId, stateId, taskId) => {
 };
 export const getPriorities = async (boardId) => {
   const response = await axios.get(`${BASE_URL}/boards/${boardId}/priorities`);
-
   return response.data;
 };
 export const getPriority = async (boardId, priorityId) => {
   const response = await axios.get(`${BASE_URL}/boards/${boardId}/priorities/${priorityId}`);
   return response.data;
 };
+export const deletePriority = async (boardId, priorityId) => {
+  const response = await axios.delete(`${BASE_URL}/boards/${boardId}/priorities/${priorityId}`);
+  return response.data;
+};
 export async function createPriority(data, boardId) {
   await axios.post(`${BASE_URL}/boards/${boardId}/priorities`, data);
 }
-
+export const updatePriority = async (data, boardId, priorityId) => {
+  const response = await axios.put(`${BASE_URL}/boards/${boardId}/priorities/${priorityId}`, data);
+  return response.data;
+};
 export const moveTaskToState = async (userId, boardId, stateId, taskId, newColumnId, newPosition) => {
   const response = await axios.put(`${BASE_URL}/users/${userId}/boards/${boardId}/states/${stateId}/tasks/${taskId}/move`, {
     newColumnId,
