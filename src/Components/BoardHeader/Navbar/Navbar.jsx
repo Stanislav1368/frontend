@@ -13,6 +13,7 @@ const handleLogoutClick = () => {
   localStorage.removeItem("token");
   window.location.href = "/login";
 };
+
 const items = [
   {
     key: "1",
@@ -40,18 +41,19 @@ const Navbar = ({ backArrow }) => {
     refetchOnWindowFocus: true,
     keepPreviousData: true,
   });
+
   const { data: notifications, isLoading: notificationsLoading } = useQuery(["notificationsForUser"], () => getNotificationsForUser(user.id), {
     enabled: !!user?.id,
     refetchOnWindowFocus: true,
     keepPreviousData: true,
   });
-  console.log(notifications);
-  console.log(invitations);
+
   const filteredNotifications = notifications?.filter(
     (notification) => notification.userId === user.id && notification.title === "Назначение на задачу"
   );
   const unreadNotifications = filteredNotifications?.filter((notification) => !notification.isRead);
   const queryClient = useQueryClient();
+
   useEffect(() => {
     SocketApi.createConnection();
     SocketApi.socket.on("sendInvite", async (userId, title, message) => {
@@ -60,38 +62,32 @@ const Navbar = ({ backArrow }) => {
           message: title,
           description: message,
         });
-        console.log(invitations);
+
         queryClient.invalidateQueries(["invitations"]);
       }
-      // queryClient.invalidateQueries(["invitations"]);
     });
     SocketApi.socket.on("sendNotif", async () => {
-      console.log(notifications);
       queryClient.invalidateQueries(["notificationsForUser"]);
     });
     return () => {};
   }, [notifications]);
+
   useEffect(() => {
     SocketApi.createConnection();
     SocketApi.socket.on("sendNotif", async () => {
-      console.log("updateResponsers");
       queryClient.invalidateQueries("notificationsForUser");
     });
 
     return () => {};
   }, []);
 
-  // if (invitationsLoading) {
-  //   return <>loading</>;
-  // }
-  console.log(filteredNotifications);
   const menu = (
     <Menu style={{ width: 400 }}>
       {filteredNotifications
-        ?.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)) // Сортировка уведомлений по дате создания в обратном порядке
+        ?.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
         .map((notification) => (
           <Menu.Item style={{ cursor: "default" }} key={notification.id} onClick={(e) => e.stopPropagation()}>
-            <Flex style={{alignItems: "center", justifyContent: "space-between"}}>
+            <Flex style={{ alignItems: "center", justifyContent: "space-between" }}>
               <span>
                 Вы назначены на задачу {notification?.task?.title} на доске{" "}
                 <a href={`/boards/${notification?.board?.id}`}>{notification?.board?.title}</a>
@@ -109,11 +105,13 @@ const Navbar = ({ backArrow }) => {
         ))}
     </Menu>
   );
+
   const markAllNotificationsAsRead = async () => {
     const allNotificationIds = filteredNotifications.map((notification) => notification.id);
     markNotificationsAsRead(user.id, allNotificationIds);
     await queryClient.invalidateQueries(["notificationsForUser"]);
   };
+
   return (
     <Header
       style={{
@@ -133,19 +131,22 @@ const Navbar = ({ backArrow }) => {
             }}></ArrowBack>
         ) : null}
 
-        <h1
-          style={{
-            margin: "0px",
-            letterSpacing: "3.5px",
-            flex: "0 0 auto",
-            lineHeight: "50px",
-            textTransform: "uppercase",
-            width: "130px",
-            fontSize: "20px",
-            fontWeight: 700,
-          }}>
-          <span> KANBAN</span>
-        </h1>
+        {/* Условный рендер для скрытия названия "KANBAN" при маленькой ширине экрана */}
+        {window.innerWidth > 768 && (
+          <h1
+            style={{
+              margin: "0px",
+              letterSpacing: "3.5px",
+              flex: "0 0 auto",
+              lineHeight: "50px",
+              textTransform: "uppercase",
+              width: "130px",
+              fontSize: "20px",
+              fontWeight: 700,
+            }}>
+            <span> KANBAN</span>
+          </h1>
+        )}
       </Flex>
 
       <Flex style={{ height: "100%" }}>
@@ -157,13 +158,15 @@ const Navbar = ({ backArrow }) => {
           </button>
         </Dropdown>
 
+        {/* Условный рендер для сокращения имени пользователя при маленькой ширине экрана */}
         <Dropdown menu={{ items }}>
           <button style={{ minWidth: "125px" }} className="profile-btn">
             <Badge count={invitations ? invitations.length : 0}>
               <Avatar size={32} icon={<UserOutlined />} />
             </Badge>
             <span style={{ marginLeft: "10px" }}>
-              {user?.firstName} {user?.lastName}
+              {/* Сокращение имени пользователя */}
+              {window.innerWidth > 768 ? `${user?.firstName} ${user?.lastName}` : `${user?.firstName?.charAt(0)}. ${user?.lastName}`}
             </span>
           </button>
         </Dropdown>

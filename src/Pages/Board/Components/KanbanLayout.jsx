@@ -1,5 +1,5 @@
 import { CheckOutlined, DownOutlined, ExclamationCircleOutlined, UserOutlined } from "@ant-design/icons";
-import { Alert, Avatar, Button, Divider, Dropdown, Flex, Layout, Menu, Modal, Typography, message, List, Select, Input } from "antd";
+import { Alert, Avatar, Button, Divider, Dropdown, Flex, Layout, Menu, Modal, Typography, message, List, Select, Input, Tag } from "antd";
 import { Content, Header } from "antd/es/layout/layout";
 import Title from "antd/es/typography/Title";
 import React, { useEffect, useRef, useState } from "react";
@@ -134,15 +134,17 @@ const KanbanLayout = ({
           alignItems: "center",
           height: "50px",
           justifyContent: "space-between",
+          flexWrap: "wrap", // Добавлено для поддержки адаптивности
         }}>
-        <div style={{ alignItems: "center", display: "flex" }}>
+        {/* Левая часть заголовка */}
+        <div style={{ alignItems: "center", display: "flex", flexBasis: "50%", minWidth: "50%" }}>
           {isEditing ? (
-            <Flex style={{ alignItems: "center", gap: "5px" }}>
+            <Flex style={{ alignItems: "center", gap: "5px", flexBasis: "50%", minWidth: "50%" }}>
               <Input
                 ref={titleInputRef}
                 value={editedTitle}
                 onChange={(e) => setEditedTitle(e.target.value)}
-                style={{ width: 200 }}
+                style={{ width: "100%" }} // Использовано значение ширины в процентах для адаптивности
                 onBlur={() => handleFocusChange(false)}
               />
               <Button onClick={handleSave}>
@@ -150,86 +152,88 @@ const KanbanLayout = ({
               </Button>
             </Flex>
           ) : (
-            <div style={{ alignItems: "center", display: "flex" }}>
+            <div style={{ alignItems: "center", display: "flex", flexBasis: "100%", minWidth: "100%" }}>
               <Typography.Text
                 style={{
                   fontSize: "24px",
                   fontFamily: "Arial",
                   color: "black",
                   fontWeight: "bold",
+                  overflow: "hidden",
+                  whiteSpace: "nowrap",
+                  textOverflow: "ellipsis",
                 }}
                 onClick={() => setIsEditing(true)}>
                 {board?.title}
               </Typography.Text>
+              <Dropdown
+                overlay={
+                  <Menu>
+                    {isOwner && (
+                      <Menu.Item danger onClick={showDeleteConfirm}>
+                        Удалить доску
+                      </Menu.Item>
+                    )}
+                    <Menu.Item danger onClick={() => handleDeleteUser(userId)}>
+                      Покинуть доску
+                    </Menu.Item>
+                  </Menu>
+                }>
+                <MoreVert style={{ cursor: "pointer" }} />
+              </Dropdown>
             </div>
           )}
-
-          <Dropdown
-            overlay={
-              <Menu>
-                {isOwner && (
-                  <Menu.Item danger onClick={showDeleteConfirm}>
-                    Удалить доску
-                  </Menu.Item>
-                )}
-                <Menu.Item danger onClick={() => handleDeleteUser(userId)}>
-                  Покинуть доску
-                </Menu.Item>
-              </Menu>
-            }>
-            <MoreVert style={{ cursor: "pointer" }} />
-          </Dropdown>
         </div>
 
-        <Flex style={{ alignItems: "center", gap: "10px" }}>
-          <Avatar.Group maxCount={2} size="large">
-            {usersBoard?.map((user) => (
-              <Avatar key={user.id} style={{ backgroundColor: `${stringToColor(user.firstName)}` }} size={36}>
-                {user.firstName}
-              </Avatar>
-            ))}
-          </Avatar.Group>
-        </Flex>
+        {/* Правая часть заголовка */}
+        <div style={{ flexBasis: "50%", minWidth: "50%" }}>
+          <Flex style={{ alignItems: "center", gap: "10px", justifyContent: "flex-end" }}>
+            <Avatar.Group maxCount={2} size="large">
+              {usersBoard?.map((user) => (
+                <Avatar key={user.id} style={{ backgroundColor: `${stringToColor(user.firstName)}` }} size={36}>
+                  {user.firstName}
+                </Avatar>
+              ))}
+            </Avatar.Group>
+          </Flex>
+        </div>
       </Header>
+
       <div style={{ display: "flex", padding: "0px 10px 5px 10px", gap: "5px", justifyContent: "space-between", flexWrap: "wrap" }}>
-        <Flex style={{ gap: "5px", flex: "1" }}>
-          {(currentRole?.name === "Администратор" || isOwner) && (
-            <Button size="small"
-              
-              onClick={() => {
-                setOpenAddSectionModal(true);
-              }}>
-              <UserOutlined /> Добавить секцию
-            </Button>
-          )}
+        <Flex style={{ gap: "5px", alignItems: "center", flex: "1", justifyContent: "space-between", flexWrap: "wrap" }}>
+          <Flex style={{ gap: "8px" }}>
+            {(currentRole?.name === "Администратор" || isOwner) && (
+              <Button
+                size="small"
+                onClick={() => {
+                  setOpenAddSectionModal(true);
+                }}>
+                <UserOutlined /> Добавить секцию
+              </Button>
+            )}
+            {(currentRole?.name === "Редактор" || isOwner) && <TagList boardId={boardId}></TagList>}
+          </Flex>
 
-          {(currentRole?.name === "Редактор" || isOwner) && (
-            // <Button
-            //   onClick={() => {
-            //     setOpenAddPriorityModal(true);
-            //   }}>
-            //   Метки
-            // </Button>
-            <TagList boardId={boardId}></TagList>
-          )}
-        </Flex>
-
-        <Flex style={{ gap: "5px", alignItems: "center" }}>
-          <Select mode="multiple" style={{ width: "210px" }} placeholder="Фильтр по пользователям" onChange={handleUserFilterChange}>
-            {usersBoard?.map((user) => (
-              <Select.Option key={user.id} value={user.id}>
-                {user.firstName}
-              </Select.Option>
-            ))}
-          </Select>
-
-          <Select mode="multiple" style={{ width: "150px" }} placeholder="Фильтр по метке" onChange={handlePriorityFilterChange}>
-            {priorities?.map((priority) => (
-              <Select.Option key={priority.id} value={priority.id}>
-                {priority.name}
-              </Select.Option>
-            ))}
-          </Select>
+          <Flex style={{ gap: "8px" }}>
+            <div style={{ flexBasis: "45%", minWidth: "200px", maxWidth: "300px" }}>
+              <Select size="small" mode="multiple" style={{ minWidth: "100%" }} placeholder="Фильтр по пользователям" onChange={handleUserFilterChange}>
+                {usersBoard?.map((user) => (
+                  <Select.Option key={user.id} value={user.id}>
+                    {user.firstName}
+                  </Select.Option>
+                ))}
+              </Select>
+            </div>
+            <div style={{ flexBasis: "45%", minWidth: "200px", maxWidth: "300px" }}>
+              <Select size="small" mode="multiple" style={{ width: "100%" }} placeholder="Фильтр по метке" onChange={handlePriorityFilterChange}>
+                {priorities?.map((priority) => (
+                  <Select.Option key={priority.id} value={priority.id}>
+                    {priority.name}
+                  </Select.Option>
+                ))}
+              </Select>
+            </div>
+          </Flex>
         </Flex>
       </div>
       <Divider style={{ margin: "0px 0px" }}></Divider>

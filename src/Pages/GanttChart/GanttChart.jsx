@@ -80,11 +80,13 @@ const GanttChart = ({ data }) => {
         title: moment(date).format("DD.MM.YYYY"),
         dataIndex: date,
         key: date,
+        align: "center",
+        width: 90,
         render: (text, record) => {
           const isTaskDate = record[date];
-          console.log(record);
+       
           let backgroundColor = "transparent";
-          console.log(moment(date).format("DD.MM.YYYY, HH.mm.ss"));
+       
           if (record.actualEndDate <= record.endDate && isTaskDate) {
             backgroundColor = "#52c41a";
           } else if (

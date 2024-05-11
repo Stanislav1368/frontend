@@ -1,19 +1,19 @@
 import React, { useState } from "react";
-import { Tag, Button, Input, Modal, Form, Select, Flex, Popconfirm } from "antd";
+import { Tag, Button, Input, Modal, Form, Flex, Popconfirm, Popover } from "antd";
 import { CloseOutlined, EditOutlined } from "@ant-design/icons";
 import { useQuery, useQueryClient } from "react-query";
-import { createPriority, deletePriority, getPriorities, updatePriority } from "../../../api"; // Импортируйте функции для создания и обновления приоритетов
-
-const { Option } = Select;
+import { createPriority, deletePriority, getPriorities, updatePriority } from "../../../api";
 
 const TagList = ({ boardId }) => {
   const { data: priorities } = useQuery(["priorities", boardId], () => getPriorities(boardId));
   const [inputVisible, setInputVisible] = useState(false);
   const [tagName, setTagName] = useState("");
-  const [tagColor, setTagColor] = useState("");
+  const [tagColor, setTagColor] = useState("#000000");
   const [editTag, setEditTag] = useState(null);
-  const [visible, setVisible] = useState(false);
+  const [editModalVisible, setEditModalVisible] = useState(false);
+  const [selectedPriority, setSelectedPriority] = useState(null);
   const queryClient = useQueryClient();
+
   const handleAddTag = async () => {
     if (tagName && tagColor) {
       await createPriority({ name: tagName, color: tagColor }, boardId);
@@ -24,62 +24,70 @@ const TagList = ({ boardId }) => {
     }
   };
 
-  const handleEdit = (index) => {
+  const handleEdit = (priority, index) => {
     setEditTag(index);
-    setVisible(true);
+    setSelectedPriority(priority);
+    setEditModalVisible(true);
   };
 
   const handleEditOk = () => {
-    setVisible(false);
+    setEditModalVisible(false);
     setEditTag(null);
+    setSelectedPriority(null);
   };
 
   const handleEditCancel = () => {
-    setVisible(false);
+    setEditModalVisible(false);
     setEditTag(null);
+    setSelectedPriority(null);
   };
 
-  const handleSaveEdit = async (index, editedTag) => {
-    await updatePriority(editedTag, boardId, priorities[index].id);
+  const handleSaveEdit = async (editedTag) => {
+    await updatePriority(editedTag, boardId, selectedPriority.id);
     queryClient.invalidateQueries(["priorities", boardId]);
   };
+
   const handleDelete = async (priorityId) => {
     await deletePriority(boardId, priorityId);
     queryClient.invalidateQueries(["columns"]);
     queryClient.invalidateQueries(["priorities"]);
   };
-  return (
-    <div>
-      {priorities?.map((priority, index) => (
-        <Tag key={index} color={priority.color} style={{ marginBottom: "8px" }}>
-          {priority.name}
-          <EditOutlined style={{ marginLeft: "8px", cursor: "pointer" }} onClick={() => handleEdit(index)} />
-          <Popconfirm title="Вы действительно хотите удалить метку?" onConfirm={() => handleDelete(priority.id)} okText="Да" cancelText="Нет">
-            <CloseOutlined style={{ cursor: "pointer" }} />
-          </Popconfirm>
-        </Tag>
-      ))}
 
+  const renderTag = (priority, index) => (
+    <Tag key={index} color={priority.color}>
+      {priority.name}
+      <EditOutlined style={{ marginLeft: "8px", cursor: "pointer" }} onClick={() => handleEdit(priority, index)} />
+      <Popconfirm title="Вы действительно хотите удалить метку?" onConfirm={() => handleDelete(priority.id)} okText="Да" cancelText="Нет">
+        <CloseOutlined style={{ cursor: "pointer" }} />
+      </Popconfirm>
+    </Tag>
+  );
+
+  return (
+    <Flex style={{ flexDirection: "row", flexWrap: "wrap"}}>
+      {priorities?.slice(0, 3).map(renderTag)}
+      {priorities && priorities.length > 3 && (
+        <Popover placement="bottom" title="Дополнительные метки" content={<div>{priorities.slice(3).map(renderTag)}</div>} trigger="click">
+          <Button style={{marginRight: "8px"}} size="small">+{priorities?.length-3}</Button>
+        </Popover>
+      )}
       {inputVisible ? (
-        <Flex>
+        <Flex style={{ flexDirection: "row" }}>
           <Input
             size="small"
-            style={{ width: "80px", marginRight: "8px" }}
+            style={{ width: "100px", marginRight: "8px" }}
             value={tagName}
             onChange={(e) => setTagName(e.target.value)}
             placeholder="Название"
           />
-          <Select
-            size="small"
-            style={{ width: "80px", marginRight: "8px" }}
+          <input
+            className="styled-input"
+            type="color"
+            style={{ width: "80px", marginRight: "8px", padding: "0", height: "25px" }}
             value={tagColor}
-            onChange={(value) => setTagColor(value)}
-            placeholder="Цвет">
-            <Option value="red">Красный</Option>
-            <Option value="blue">Синий</Option>
-            <Option value="green">Зеленый</Option>
-          </Select>
-          <Flex style={{ gap: "8px" }}>
+            onChange={(e) => setTagColor(e.target.value)}
+          />
+          <Flex style={{ gap: "8px", flexDirection: "row" }}>
             <Button size="small" onClick={handleAddTag}>
               Добавить
             </Button>
@@ -99,14 +107,14 @@ const TagList = ({ boardId }) => {
           + Метка
         </Button>
       )}
-      <Modal title="Edit Tag" visible={visible} onCancel={handleEditCancel} footer={null}>
-        <EditTagForm index={editTag} tag={editTag !== null ? priorities[editTag] : null} onSave={handleSaveEdit} />
+      <Modal title="Редактирование метки" visible={editModalVisible} onCancel={handleEditCancel} footer={null}>
+        <EditTagForm tag={selectedPriority} onSave={handleSaveEdit} />
       </Modal>
-    </div>
+    </Flex>
   );
 };
 
-const EditTagForm = ({ index, tag, onSave }) => {
+const EditTagForm = ({ tag, onSave }) => {
   const [form] = Form.useForm();
 
   React.useEffect(() => {
@@ -115,7 +123,7 @@ const EditTagForm = ({ index, tag, onSave }) => {
 
   const handleSave = () => {
     form.validateFields().then((values) => {
-      onSave(index, { ...tag, name: values.name, color: values.color });
+      onSave({ ...tag, name: values.name, color: values.color });
       form.resetFields();
     });
   };
@@ -125,18 +133,14 @@ const EditTagForm = ({ index, tag, onSave }) => {
       <Form.Item name="name" label="Название" rules={[{ required: true, message: "Введите название" }]}>
         <Input />
       </Form.Item>
-      <Form.Item name="color" label="Цвет" rules={[{ required: true, message: "Выберите цвет" }]}>
-        <Select>
-          <Option value="red">Красный</Option>
-          <Option value="blue">Синий</Option>
-          <Option value="green">Зеленый</Option>
-        </Select>
+      <Form.Item name="color" label="Цвет" rules={[{ required: true, message: "Введите цвет" }]}>
+        <input type="color" className="styled-input" style={{ height: "25px", width: "80px" }} />
       </Form.Item>
-      <Flex style={{ justifyContent: "right", gap: "8px" }}>
+      <Flex style={{ justifyContent: "flex-end", gap: "8px" }}>
         <Button type="primary" onClick={handleSave}>
           Сохранить
         </Button>
-        <Button onClick={handleSave}>Отмена</Button>
+        <Button onClick={() => form.resetFields()}>Отмена</Button>
       </Flex>
     </Form>
   );

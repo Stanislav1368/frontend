@@ -19,7 +19,7 @@ export default class SocketApi {
   }
 }
 export async function login(data) {
-  console.log(data);
+
   const response = await axios.post(`${BASE_URL}/auth/login`, data);
   const token = response.data.token;
   localStorage.setItem("token", token);
@@ -60,7 +60,7 @@ export async function addTask(data, userId, boardId, stateId) {
   return response.data;
 }
 export async function addSubTask(userId, boardId, stateId, taskId, data) {
-  console.log(data);
+
   const response = await axios.post(`${BASE_URL}/users/${userId}/boards/${boardId}/states/${stateId}/tasks/${taskId}/subtasks`, data);
   return response.data;
 }
@@ -94,7 +94,7 @@ export async function updateTaskIsCompleted(userId, boardId, stateId, taskId, up
   await axios.put(`${BASE_URL}/users/${userId}/boards/${boardId}/states/${stateId}/tasks/${taskId}/isCompleted`, updatedIsCompleted);
 }
 export async function updateSubTaskIsCompleted(userId, boardId, stateId, taskId, subTaskId, updatedIsCompleted) {
-  console.log(userId, boardId, stateId, taskId, subTaskId, updatedIsCompleted);
+
   await axios.put(
     `${BASE_URL}/users/${userId}/boards/${boardId}/states/${stateId}/tasks/${taskId}/subtasks/${subTaskId}/isCompleted`,
     updatedIsCompleted
@@ -247,7 +247,7 @@ export const deleteNotification = async (userId, notificationId) => {
   const response = await axios.delete(`${BASE_URL}/users/${userId}/notifications/${notificationId}`);
 };
 export const getNotificationsForBoard = async (userId, boardId) => {
-  console.log({ boardId });
+
   const response = await axios.get(`${BASE_URL}/users/${userId}/notifications`, { params: { boardId: boardId } }); // Укажите boardId явно
   return response.data;
 };
@@ -256,10 +256,10 @@ export const getNotificationsForUser = async (userId) => {
   return response.data;
 };
 export const markNotificationsAsRead = async (userId, notificationIds) => {
-  console.log(userId, notificationIds);
+
   try {
     const response = await axios.post(`${BASE_URL}/users/${userId}/notifications/readNotif`, { notificationIds });
-    console.log("Уведомления успешно отмечены как прочитанные", response.data);
+
     return response.data;
   } catch (error) {
     console.error("Произошла ошибка при отметке уведомлений как прочитанных", error);
@@ -300,7 +300,7 @@ export const deleteInvitations = async (userId, notificationId) => {
 
 export const fetchFiles = async (taskId) => {
   const response = await axios.get(`${BASE_URL}/files/${taskId}`);
-  console.log(response.data);
+
   return response.data;
 };
 
@@ -328,7 +328,7 @@ export const deleteFile = async (file) => {
   }
 };
 export const checkAccessibility = (boardId, user) => {
-  console.log(boardId, user?.boards);
+
 
   if (user?.boards.some((board) => board.id.toString() === boardId)) return true;
   return false;

@@ -22,7 +22,7 @@ const Roles = () => {
   const { data: roles = [] } = useQuery(["roles"], () => getRoles());
   const queryClient = useQueryClient();
 
-  console.log(currentRole);
+  
   return (
     <Layout>
       <div style={{ margin: "8px", display: "flex", flexDirection: "column", gap: "10px" }}>

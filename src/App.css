@@ -1,4 +1,15 @@
-
+.styled-input {
+  border-radius: 5px;
+  border: 1px solid #ccc;
+  outline: none;
+}
+.styled-input::-webkit-color-swatch-wrapper {
+  padding: 0;
+}
+.styled-input::-webkit-color-swatch {
+  border: none;
+  border-radius: 5px;
+}
 .alert {
   padding: 12px 20px;
   border: 1px solid transparent;

@@ -24,16 +24,11 @@ const UserProfile = () => {
   });
 
   const queryClient = useQueryClient();
-  const { data: notifications, isLoading: notificationsLoading } = useQuery(
-    ["notificationsForBoard"],
-    () => getNotificationsForUser(user.id),
-    {
-      enabled: !!user?.id,
-      refetchOnWindowFocus: false,
-      keepPreviousData: true,
-    }
-  );
-  console.log(notifications);
+  const { data: notifications, isLoading: notificationsLoading } = useQuery(["notificationsForBoard"], () => getNotificationsForUser(user.id), {
+    enabled: !!user?.id,
+    refetchOnWindowFocus: false,
+    keepPreviousData: true,
+  });
 
   const filteredNotifications = notifications?.filter((notification) => notification.title === "Назначение на задачу");
 
@@ -69,7 +64,9 @@ const UserProfile = () => {
         <Layout style={{ height: "100vh" }}>
           <Navbar backArrow={false} />
 
-          <Layout style={{justifyContent: "center", alignItems: "center"}}><Spin  size="large" /></Layout>
+          <Layout style={{ justifyContent: "center", alignItems: "center" }}>
+            <Spin size="large" />
+          </Layout>
         </Layout>
       </>
     );
@@ -82,7 +79,9 @@ const UserProfile = () => {
         <Content style={{ padding: "0 5%", maxWidth: "1200px" }}>
           <div>
             <div style={{ display: "flex", alignItems: "center", marginBottom: "20px" }}>
-              <Avatar size={64} icon={<UserOutlined />} style={{ minWidth: "64px", minHeight: "64px" }} />
+              <Avatar key={user.id} style={{ backgroundColor: `${stringToColor(user.firstName)}`, fontSize: "12px" }} size={64}>
+                {user.firstName}
+              </Avatar>
               <div style={{ marginLeft: "20px" }}>
                 <h2>{user.name}</h2>
                 <p>
@@ -99,7 +98,6 @@ const UserProfile = () => {
               dataSource={invitations}
               renderItem={(item) => (
                 <div style={{ marginBottom: "10px" }}>
-                  {/* Add margin-bottom to create spacing */}
                   <Alert
                     message={item.title}
                     description={`${item.message} от пользователя ${item.inviterLastName} ${item.inviterFirstName}  ${item.inviterMiddleName}`}
@@ -145,3 +143,20 @@ const UserProfile = () => {
 };
 
 export default UserProfile;
+function stringToColor(string) {
+  let hash = 0;
+  let i;
+
+  for (i = 0; i < string.length; i += 1) {
+    hash = string.charCodeAt(i) + ((hash << 5) - hash);
+  }
+
+  let color = "#";
+
+  for (i = 0; i < 3; i += 1) {
+    const value = (hash >> (i * 8)) & 0xff;
+    color += `00${value.toString(16)}`.slice(-2);
+  }
+
+  return color;
+}

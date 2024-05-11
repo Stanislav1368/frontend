@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useMutation } from "react-query";
 import { useNavigate } from "react-router-dom";
 import { login } from "../../api";
-import { Form, Input, Button, message, Card } from "antd";
+import { Form, Input, Button, message, Card, Layout } from "antd";
 import { UserOutlined, LockOutlined } from "@ant-design/icons";
 import "./LoginPage.css";
 
@@ -15,7 +15,7 @@ const LoginPage = () => {
   const navigate = useNavigate();
 
   const handleLogin = async (values) => {
-    console.log(values)
+
     try {
       setLoading(true);
       await mutation.mutateAsync(values);
@@ -27,7 +27,7 @@ const LoginPage = () => {
     }
   };
   return (
-    <div style={{ height: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
+    <Layout style={{ height: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
       <Card>
         <Form onFinish={handleLogin}>
           <h1>Вход</h1>
@@ -54,7 +54,7 @@ const LoginPage = () => {
           <a href="/registration">Регистрация</a>
         </Form>
       </Card>
-    </div>
+    </Layout>
   );
 };
 export default LoginPage;

@@ -36,7 +36,7 @@ import {
   message,
   Select,
 } from "antd";
-import Comments from "../../../Components/Comments";
+
 import {
   addSubTask,
   getCurrentRole,
@@ -49,6 +49,7 @@ import {
   updateTaskUsers,
 } from "../../../api";
 import FileComponent from "./FileComponent";
+import Comments from "./Comments";
 
 const TaskCard = ({ task, isDragging, deleteTask, userId, boardId, usersBoard, priorities }) => {
   const queryClient = useQueryClient();
@@ -62,7 +63,7 @@ const TaskCard = ({ task, isDragging, deleteTask, userId, boardId, usersBoard, p
 
   const [startDate, setStartDate] = useState(task.startDate);
   const [endDate, setEndDate] = useState(task.endDate);
-  console.log(priorities);
+
   const { data: currentRole, isLoading: currentRoleLoading } = useQuery("currentRole", () => getCurrentRole(userId, boardId), {
     enabled: !!userId,
     refetchOnWindowFocus: false,
@@ -73,13 +74,13 @@ const TaskCard = ({ task, isDragging, deleteTask, userId, boardId, usersBoard, p
     refetchOnWindowFocus: false,
     keepPreviousData: true,
   });
-  console.log(subTasks);
+
   const handleUpdateTask = async (values) => {
-    console.log(values);
+    
     try {
       await updateTask(userId, boardId, task.stateId, task.id, values);
       queryClient.invalidateQueries(["columns"]);
-      console.log(1);
+     
       // form.resetFields(); // Сбросить значения полей формы
     } catch (error) {
       console.error("Ошибка при обновлении задачи", error);
@@ -112,7 +113,7 @@ const TaskCard = ({ task, isDragging, deleteTask, userId, boardId, usersBoard, p
       title: "Изменение задачи",
       content: (
         <Form form={form} onFinish={handleUpdateTask} initialValues={task}>
-          {console.log(task)}
+        
           <Form.Item name="title" rules={[{ required: true, message: "Пожалуйста, введите название задачи" }]}>
             <Input placeholder="Название задачи" />
           </Form.Item>
@@ -154,11 +155,11 @@ const TaskCard = ({ task, isDragging, deleteTask, userId, boardId, usersBoard, p
     });
   };
   const handleAddSubTask = async (values) => {
-    console.log(values);
+
     await addSubTask(userId, boardId, task?.stateId, task?.id, { title: values.subtaskName, taskId: task?.id });
     await queryClient.invalidateQueries(["subtasks", task?.id]);
   };
-  console.log(task);
+  
   return (
     <div style={{ marginBottom: "10px" }}>
       {task?.priority ? (
@@ -374,7 +375,7 @@ const TaskHeader = ({ task, userId, boardId, handleArchiveTask, showDeleteConfir
       titleInputRef.current.focus();
     }
   }, [isEditing]);
-  console.log(isOwner || currentRole?.name === "Администратор" || task.creater === userId);
+
   return (
     <div style={{ justifyContent: "space-between", display: "flex", alignItems: "center" }}>
       {isEditing && (isOwner || (task.creater === userId && currentRole.name === "Редактор") || currentRole.name === "Администратор") ? (

@@ -52,7 +52,7 @@ const Archive = ({ boardId }) => {
               bordered
               title={
                 <>
-                  <Checkbox className="checkbox" type="checkbox" checked={task?.isCompleted} />
+                  <Checkbox className="checkbox" type="checkbox" checked={task?.isCompleted} style={{ marginRight: "8px" }} />
                   {task?.title}
                 </>
               }
@@ -62,26 +62,14 @@ const Archive = ({ boardId }) => {
                 margin: "10px",
                 maxWidth: "250px",
                 transition: "background-color 0.2s, box-shadow 0.2s",
-                backgroundColor: !task?.isCompleted ? "#ffffff" : "#f3f3f3", // Меняем цвет фона, чтобы выделить что задача завершена
-                opacity: task?.isCompleted ? 0.6 : 1, // Уменьшаем немного прозрачность для дизейбленной карточки
+                backgroundColor: !task?.isCompleted ? "#ffffff" : "#ffffff", // Меняем цвет фона, чтобы выделить что задача завершена
+                opacity: task?.isCompleted ? 0.5 : 1, // Уменьшаем немного прозрачность для дизейбленной карточки
               }}>
               <div>Столбец: {task.state.title}</div>
               <div>
                 {task?.startDate && <p>Начало: {moment(task?.startDate).locale("ru").format("DD.MM.YYYY")}</p>}
                 {task?.endDate && <p>Конец: {moment(task?.endDate).locale("ru").format("DD.MM.YYYY")}</p>}
               </div>
-              {task?.users && task?.users.length > 0 && (
-                <>
-                  <Divider>Ответственные</Divider>
-                  <div style={{ display: "flex" }}>
-                    {task.users.map((user, index) => (
-                      <Avatar key={user.id} style={{ backgroundColor: `${stringToColor(user.firstName)}` }}>
-                        {user.firstName}
-                      </Avatar>
-                    ))}
-                  </div>
-                </>
-              )}
               {(currentRole?.name === "Администратор" || currentRole?.name === "Редактор" || isOwner) && (
                 <Button
                   type="primary"

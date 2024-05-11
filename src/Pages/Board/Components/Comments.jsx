@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from "react";
 
 import { useQuery, useQueryClient } from "react-query";
-import SocketApi, { commentTask, getCommentsTask } from "../api";
-import { Avatar, Button, Form, Input, List, Divider } from "antd";
+import SocketApi, { commentTask, getCommentsTask } from "../../../api";
+import { Avatar, Button, Form, Input, List, Divider, Flex } from "antd";
+import { ArrowRight } from "@mui/icons-material";
 
 const Comments = ({ userId, boardId, stateId, taskId, currentRole, canComments }) => {
   const queryClient = useQueryClient();
@@ -79,16 +80,19 @@ const FormComment = ({ userId, boardId, stateId, taskId, currentRole }) => {
 
   return (
     <Form form={form} onFinish={handleCommentSubmit}>
-      <Form.Item name="comment" rules={[{ required: true, message: "Введите ваш комментарий" }]}>
-        <Input.TextArea placeholder="Введите ваш комментарий" onChange={handleInputChange} />
+    <Flex style={{ width: "100%"}}>
+      <Form.Item name="comment" rules={[{ required: true, message: "Введите ваш комментарий" }]} style={{ flex: "1 1 0", marginRight: "10px" }}>
+        <Input.TextArea style={{ minHeight: "50px", width: "100%" }} placeholder="Введите ваш комментарий" onChange={handleInputChange} />
       </Form.Item>
       {charCountWarning && <p style={{ color: "red" }}>Превышено допустимое количество символов (255)</p>}
       <Form.Item>
         <Button type="primary" htmlType="submit">
-          Добавить комментарий
+          <ArrowRight></ArrowRight>
         </Button>
       </Form.Item>
-    </Form>
+    </Flex>
+  </Form>
+  
   );
 };
 function stringToColor(string) {

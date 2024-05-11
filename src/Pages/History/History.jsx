@@ -1,13 +1,19 @@
-import React from "react";
-import { Layout, Typography, List } from "antd";
+import React, { useState } from "react";
+import { Layout, Input, Pagination, Card, Typography } from "antd";
 import { useQuery, useQueryClient } from "react-query";
 import { fetchUser, fetchUserId, getNotificationsForBoard } from "../../api";
 import { useParams } from "react-router-dom";
 import moment from "moment";
+
+const { Search } = Input;
+const { Text } = Typography;
+
 const History = ({}) => {
   const queryClient = useQueryClient();
   const { boardId } = useParams();
-  console.log(boardId);
+  const [searchValue, setSearchValue] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+  const pageSize = 15; // Количество элементов на странице
 
   const { data: user, isLoading: isUserLoading } = useQuery("user", fetchUser);
   const { data: userId, isLoading: isUserIdLoading } = useQuery("userId", fetchUserId, {
@@ -24,27 +30,46 @@ const History = ({}) => {
       keepPreviousData: true,
     }
   );
-  console.log(notifications);
 
-  const filteredNotifications = notifications?.filter((notification) => notification.boardId == boardId && notification.title === "Задача завершена");
-  console.log(filteredNotifications);
+  // Фильтрация уведомлений по поисковому запросу и сортировка по убыванию времени создания
+  const filteredNotifications = notifications
+    ?.filter(
+      (notification) =>
+        notification.boardId == boardId &&
+        notification.title === "Задача завершена" &&
+        notification.message.toLowerCase().includes(searchValue.toLowerCase())
+    )
+    .sort((a, b) => moment(b.createdAt).valueOf() - moment(a.createdAt).valueOf());
+
+  const paginatedNotifications = filteredNotifications?.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+
+  const handlePageChange = (page, pageSize) => {
+    setCurrentPage(page);
+  };
+
   return (
     <Layout style={{ height: "100%", margin: "0px" }}>
       <Layout.Content>
-        <div style={{ padding: "0px 24px" }}>
-
-          <List
-            dataSource={filteredNotifications}
-            renderItem={(notification) => (
-              <List.Item key={notification.id}>
+        <Search  placeholder="Поиск по уведомлениям" allowClear onChange={(e) => setSearchValue(e.target.value)} style={{ width: "300px", padding: "12px 24px" }} />
+        <div style={{ padding: "24px", maxHeight: "calc(100vh - 200px)", overflowY: "auto" }}>
+          {paginatedNotifications &&
+            paginatedNotifications.map((notification) => (
+              <Card key={notification.id} style={{ marginBottom: "16px" }}>
                 <Typography.Text>{notification.message}</Typography.Text>
                 <br />
-                <Typography.Text>{moment(notification.createdAt).format("DD.MM.YYYY, HH:mm:ss")}</Typography.Text>
-              </List.Item>
-            )}
-          />
+                <Text>{moment(notification.createdAt).format("DD.MM.YYYY, HH:mm:ss")}</Text>
+              </Card>
+            ))}
         </div>
       </Layout.Content>
+
+      <Pagination
+        current={currentPage}
+        pageSize={pageSize}
+        total={filteredNotifications?.length || 0}
+        onChange={handlePageChange}
+        style={{ margin: 16, textAlign: "center" }}
+      />
     </Layout>
   );
 };

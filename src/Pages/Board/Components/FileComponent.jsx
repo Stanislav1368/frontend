@@ -14,9 +14,9 @@ const FileComponent = ({ taskId, currentRole }) => {
   const [uploading, setUploading] = useState(false);
 
   const { data: files, isLoading } = useQuery(["files", taskId], () => fetchFiles(taskId));
-  console.log(files)
+ 
   const handleFileUpload = async (file) => {
-    console.log(file);
+ 
     try {
       setUploading(true);
       await uploadFile(file, taskId);
@@ -29,7 +29,7 @@ const FileComponent = ({ taskId, currentRole }) => {
     }
   };
   const handleFileDelete = async (file) => {
-    console.log(file);
+  
     try {
       await deleteFile(file);
       message.success("Файл удален");
@@ -41,7 +41,7 @@ const FileComponent = ({ taskId, currentRole }) => {
     }
   };
   const renderFileContent = (file) => {
-    console.log(file)
+   
     if (file.type.startsWith("image")) {
       return <Image style={{ height: "100%", width: "130px" }} src={`${BASE_URL}/files/download/${file.id}`} alt={file.name} />;
     } else {

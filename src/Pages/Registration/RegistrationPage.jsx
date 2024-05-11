@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { useMutation } from "react-query";
 import { registration } from "../../api";
 import "./RegistrationPage.css";
-import { Form, Input, Button, Card, message } from "antd";
+import { Form, Input, Button, Card, message, Layout } from "antd";
 import { LockOutlined, MailOutlined, UserOutlined } from "@ant-design/icons";
 
 const RegistrationPage = () => {
@@ -34,9 +34,9 @@ const RegistrationPage = () => {
   };
 
   return (
-    <div style={{ height: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
-      <Card>
-        <Form name="registration_form" onFinish={handleRegistration}>
+    <Layout style={{ height: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
+      <Card style={{width: "289px"}}>
+        <Form name="registration_form"  onFinish={handleRegistration}>
           <h1>Регистрация</h1>
           <Form.Item name="firstName" rules={[{ required: true, message: "Пожалуйста, введите имя!" }]}>
             <Input prefix={<UserOutlined />} placeholder="Имя" />
@@ -90,7 +90,7 @@ const RegistrationPage = () => {
           <a href="/login">Уже есть аккаунт?</a>
         </Form>
       </Card>
-    </div>
+    </Layout>
   );
 };
 

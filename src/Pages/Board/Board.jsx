@@ -33,6 +33,7 @@ import { TeamOutlined } from "@ant-design/icons";
 import History from "../History/History";
 import NotFoundPage from "../NotFoundPage/NotFoundPage";
 import HoursTask from "../HoursTask/HoursTask";
+import HoursComponent from "../HoursTask/HoursTask";
 
 const Board = () => {
   const queryClient = useQueryClient();
@@ -66,7 +67,7 @@ const Board = () => {
   });
 
   const createPriorityForBoard = async (values) => {
-    console.log(values);
+  
     try {
       values.color = hexString;
 
@@ -101,7 +102,7 @@ const Board = () => {
 
   const { data: usersBoard } = useQuery(["users", board?.id], () => fetchUsersByBoard(boardId));
   const { data: priorities } = useQuery(["priorities", board?.id], () => getPriorities(boardId));
-  console.log(usersBoard);
+
   const [openAddSectionModal, setOpenAddSectionModal] = useState(false);
   const [openAddUserModal, setOpenAddUserModal] = useState(false);
   const [openAddPriorityModal, setOpenAddPriorityModal] = useState(false);
@@ -116,7 +117,7 @@ const Board = () => {
   };
 
   const handleAddState = async (values) => {
-    console.log(values);
+  
     try {
       setOpenAddSectionModal(false);
       const newColumn = await addState(values, userId, board.id);
@@ -133,8 +134,7 @@ const Board = () => {
 
   //   );
   // }
-  console.log(columns);
-
+ 
   return (
     <>
       <Layout style={{ height: "100vh" }}>
@@ -161,7 +161,7 @@ const Board = () => {
                       <Link to={`/boards/${boardId}/gant`}>Гант</Link>
                     </Menu.Item>
                     <Menu.Item style={{ padding: "0px 16px 0px 16px" }} icon={<AccountTreeOutlined style={{ fontSize: "18px" }} />}>
-                      <Link to={`/boards/${boardId}/hoursTask`}>Распределении часов на задачи</Link>
+                      <Link to={`/boards/${boardId}/hoursTask`}>Подсчет часов</Link>
                     </Menu.Item>
                     <Menu.Item style={{ padding: "0px 16px 0px 16px" }} icon={<ArchiveIcon style={{ fontSize: "18px" }} />}>
                       <Link to={`/boards/${boardId}/archive`}>Архив</Link>
@@ -198,7 +198,7 @@ const Board = () => {
                         }
                       />
                       <Route path="/gant" element={<GanttChart data={columns} />} />
-                      <Route path="/hoursTask" element={<HoursTask data={columns} userId={userId} />} />
+                      <Route path="/hoursTask" element={<HoursComponent data={columns} usersBoard={usersBoard}/>} />
                       <Route path="/archive" element={<Archive boardId={boardId} />} />
                       <Route path="/users" element={<Users userId={userId} boardId={boardId} />} />
                       <Route path="/roles" element={<Roles userId={userId} boardId={boardId} />} />
@@ -263,6 +263,6 @@ const Board = () => {
 
 export default Board;
 function checkAccess(boardId, userBoards) {
-  console.log(boardId, userBoards);
+ 
   return userBoards.some((board) => board.id === boardId);
 }

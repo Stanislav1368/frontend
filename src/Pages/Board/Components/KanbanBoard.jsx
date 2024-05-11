@@ -10,7 +10,7 @@ import { DeleteOutline } from "@mui/icons-material";
 const { RangePicker } = DatePicker;
 
 const KanbanBoard = ({ columns, updateColumns, boardId, userId, users, priorities, selectedUsers, selectedPriorities }) => {
-  console.log(columns);
+  
   const queryClient = useQueryClient();
   const { data: currentRole, isLoading: currentRoleLoading } = useQuery("currentRole", () => getCurrentRole(userId, boardId));
   const { data: isOwner, isLoading: ownerLoading } = useQuery("isOwner", () => getRoleByBoardId(userId, boardId));
@@ -19,8 +19,11 @@ const KanbanBoard = ({ columns, updateColumns, boardId, userId, users, prioritie
   const handleAddState = async () => {
     try {
       const defaultColumns = [{ title: "Backlog" }, { title: "В разработке" }, { title: "Тестирование" }, { title: "Готово" }];
-      const newColumns = await Promise.all(defaultColumns.map((column) => addState(column, userId, boardId)));
-      queryClient.setQueryData(["columns", userId, boardId], (prevColumns) => [...prevColumns, ...newColumns]);
+      
+      for (const column of defaultColumns) {
+        const newColumn = await addState(column, userId, boardId);
+        queryClient.setQueryData(["columns", userId, boardId], (prevColumns) => [...prevColumns, newColumn]);
+      }
     } catch (error) {
       console.error(error);
     }
@@ -104,7 +107,7 @@ const KanbanBoard = ({ columns, updateColumns, boardId, userId, users, prioritie
   };
   const handleAddTask = async (values) => {
     setOpenAddTaskModal(false);
-    console.log(values);
+
     try {
       const addedTask = await addTask(values, userId, boardId, selectedColumnId);
 
@@ -127,7 +130,7 @@ const KanbanBoard = ({ columns, updateColumns, boardId, userId, users, prioritie
   };
   if (!ownerLoading || !currentRoleLoading) {
   }
-  console.log(columns);
+
   if ((!columns || columns.length === 0) && (isOwner || currentRole.name === "Администратор")) {
     return (
       <div style={{ height: "100%", display: "flex", alignItems: "center", justifyContent: "center" }}>
@@ -367,7 +370,7 @@ const ColumnHeader = ({ column, handleOpenTaskModal, userId, boardId, editingCol
                     okType: "danger",
                     content: "Это действие нельзя отменить.",
                     onOk: async () => {
-                      console.log(userId, boardId, column?.id);
+                    
                       await deleteState(userId, boardId, column?.id);
                       queryClient.invalidateQueries("columns");
                     },

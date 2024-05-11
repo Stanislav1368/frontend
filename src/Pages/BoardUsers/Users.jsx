@@ -76,8 +76,12 @@ const Users = () => {
       message.error("Нельзя отправить приглашение самому себе!");
       return;
     } else {
-      await createInvitation(values.email, userId, boardId, "Приглашение", "Приглашение на доску"); // Здесь предполагается, что values содержит userId и boardId
-      message.success("Приглашение отправлено!");
+      try {
+        await createInvitation(values.email, userId, boardId, "Приглашение", "Приглашение на доску"); // Здесь предполагается, что values содержит userId и boardId
+        message.success("Приглашение отправлено!");
+      } catch (error) {
+        message.error("Пользователь не найден!");
+      }
     }
   };
 
@@ -102,7 +106,7 @@ const Users = () => {
               <span>{user.lastName}</span> <span>{user.firstName}</span> <span>{user.middleName}</span> {user.isOwner && <span>Владелец</span>}
             </h3>
           </div>
-          {console.log(user)}
+
           {isOwner || (currentRole?.name === "Администратор" && !user.isOwner && user.roleName !== "Владелец") ? (
             <div style={{ display: "flex", gap: "10px" }}>
               {currentRole?.name === "Администратор" && user.roleName === "Администратор" ? (
@@ -160,9 +164,9 @@ const Users = () => {
         <Button
           onClick={() => setShowAddUserModal(true)}
           style={{
-            color: "rgba(0, 0, 0, 0.65)", // Цвет текста сероватой прозрачности
-            border: "1px solid rgba(0, 0, 0, 0.25)", // Бордюр для эффекта прозрачности
-            backgroundColor: "transparent", // Прозрачный фон
+            color: "rgba(0, 0, 0, 0.65)",
+            border: "1px solid rgba(0, 0, 0, 0.25)",
+            backgroundColor: "transparent",
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
@@ -170,7 +174,7 @@ const Users = () => {
             cursor: "pointer",
             padding: "8px 16px",
           }}>
-          <PlusOutlined style={{ fontSize: "16px", margin: "auto" }} /> {/* Иконка плюса */}
+          <PlusOutlined style={{ fontSize: "16px", margin: "auto" }} />
         </Button>
       )}
 
