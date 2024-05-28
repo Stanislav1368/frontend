@@ -108,13 +108,13 @@ const TagList = ({ boardId }) => {
         </Button>
       )}
       <Modal title="Редактирование метки" visible={editModalVisible} onCancel={handleEditCancel} footer={null}>
-        <EditTagForm tag={selectedPriority} onSave={handleSaveEdit} />
+        <EditTagForm tag={selectedPriority} onSave={handleSaveEdit} onCancel={handleEditCancel}/>
       </Modal>
     </Flex>
   );
 };
 
-const EditTagForm = ({ tag, onSave }) => {
+const EditTagForm = ({ tag, onSave, onCancel }) => {
   const [form] = Form.useForm();
 
   React.useEffect(() => {
@@ -140,7 +140,7 @@ const EditTagForm = ({ tag, onSave }) => {
         <Button type="primary" onClick={handleSave}>
           Сохранить
         </Button>
-        <Button onClick={() => form.resetFields()}>Отмена</Button>
+        <Button onClick={onCancel}>Отмена</Button>
       </Flex>
     </Form>
   );

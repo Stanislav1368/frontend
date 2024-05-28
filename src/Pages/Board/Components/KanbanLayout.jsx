@@ -190,7 +190,7 @@ const KanbanLayout = ({
           <Flex style={{ alignItems: "center", gap: "10px", justifyContent: "flex-end" }}>
             <Avatar.Group maxCount={2} size="large">
               {usersBoard?.map((user) => (
-                <Avatar key={user.id} style={{ backgroundColor: `${stringToColor(user.firstName)}` }} size={36}>
+                <Avatar key={user.id} style={{ backgroundColor: `${stringToColor(user.firstName)}` }} size="large">
                   {user.firstName}
                 </Avatar>
               ))}
@@ -211,7 +211,7 @@ const KanbanLayout = ({
                 <UserOutlined /> Добавить секцию
               </Button>
             )}
-            {(currentRole?.name === "Редактор" || isOwner) && <TagList boardId={boardId}></TagList>}
+            {(currentRole?.name === "Редактор" || isOwner || currentRole?.name === "Администратор") && <TagList boardId={boardId}></TagList>}
           </Flex>
 
           <Flex style={{ gap: "8px" }}>

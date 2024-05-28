@@ -11,6 +11,7 @@ import SocketApi, {
   getNotificationsForUser,
 } from "../../api";
 import { UserOutlined } from "@ant-design/icons";
+import moment from "moment";
 
 const { Content } = Layout;
 const { TabPane } = Tabs;
@@ -98,9 +99,10 @@ const UserProfile = () => {
               dataSource={invitations}
               renderItem={(item) => (
                 <div style={{ marginBottom: "10px" }}>
+                  {console.log(invitations)}
                   <Alert
                     message={item.title}
-                    description={`${item.message} от пользователя ${item.inviterLastName} ${item.inviterFirstName}  ${item.inviterMiddleName}`}
+                    description={`${item.message} от пользователя ${item.inviterLastName} ${item.inviterFirstName}  ${item.inviterMiddleName}. Дата приглашения: ${moment(item.createdAt).locale("ru").format("DD.MM.YYYY, h:m")}`}
                     type="info"
                     action={
                       <Space direction="vertical">

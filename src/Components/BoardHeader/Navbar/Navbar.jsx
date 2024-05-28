@@ -61,6 +61,10 @@ const Navbar = ({ backArrow }) => {
         notification.open({
           message: title,
           description: message,
+          style: { cursor: 'pointer' },
+          onClick: () => {
+            window.location.href = "profile";
+          },
         });
 
         queryClient.invalidateQueries(["invitations"]);
@@ -158,7 +162,7 @@ const Navbar = ({ backArrow }) => {
           </button>
         </Dropdown>
 
-        {/* Условный рендер для сокращения имени пользователя при маленькой ширине экрана */}
+
         <Dropdown menu={{ items }}>
           <button style={{ minWidth: "125px" }} className="profile-btn">
             <Badge count={invitations ? invitations.length : 0}>

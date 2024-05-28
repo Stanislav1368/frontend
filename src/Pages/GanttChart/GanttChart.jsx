@@ -4,7 +4,7 @@ import moment from "moment";
 import "./GanttChart.css";
 
 const GanttChart = ({ data }) => {
-  // Получаем все задачи
+  console.log(data)
   const allTasks = data?.reduce((accumulator, state) => accumulator.concat(state.tasks), []);
 
   // Получаем все даты
@@ -81,18 +81,29 @@ const GanttChart = ({ data }) => {
         dataIndex: date,
         key: date,
         align: "center",
-        width: 90,
+        width: 70,
         render: (text, record) => {
           const isTaskDate = record[date];
-       
+    
           let backgroundColor = "transparent";
-       
-          if (record.actualEndDate <= record.endDate && isTaskDate) {
+          
+          // Преобразование строк в объекты moment
+          const actualEndDate = moment(record.actualEndDate, "DD.MM.YYYY, HH.mm.ss");
+          const endDate = moment(record.endDate, "DD.MM.YYYY, HH.mm.ss");
+          const startDate = moment(record.startDate, "DD.MM.YYYY, HH.mm.ss");
+          const currentDate = moment(date, "YYYY-MM-DD");
+          console.log(date, currentDate)
+          console.log(actualEndDate.format('DD.MM.YYYY'), endDate.format('DD.MM.YYYY'), currentDate.format('DD.MM.YYYY'), startDate.format('DD.MM.YYYY'), 
+            endDate.isBefore(actualEndDate) &&
+            currentDate.isSameOrBefore(actualEndDate) &&
+            currentDate.isAfter(startDate)
+          )
+          if (actualEndDate.isSameOrBefore(endDate) && isTaskDate) {
             backgroundColor = "#52c41a";
           } else if (
-            record.endDate < record.actualEndDate &&
-            moment(date).format("DD.MM.YYYY, HH.mm.ss") <= record.actualEndDate &&
-            moment(date).format("DD.MM.YYYY, HH.mm.ss") > record.startDate
+            endDate.isBefore(actualEndDate) &&
+            currentDate.isSameOrBefore(actualEndDate) &&
+            currentDate.isAfter(startDate)
           ) {
             backgroundColor = "#d32f2f ";
             if (isTaskDate) {
@@ -104,7 +115,7 @@ const GanttChart = ({ data }) => {
               backgroundColor = "#52c41a";
             }
           }
-
+    
           return {
             children: <div style={{ maxHeight: "40px", minHeight: "40px" }} />,
             props: {
@@ -116,7 +127,7 @@ const GanttChart = ({ data }) => {
         },
         className: "no-border-right",
       };
-    }),
+    })
   ];
 
   // Создаем источник данных для таблицы

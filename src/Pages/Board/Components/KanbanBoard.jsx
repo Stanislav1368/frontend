@@ -175,7 +175,7 @@ const KanbanBoard = ({ columns, updateColumns, boardId, userId, users, prioritie
                                 draggableId={`${task.id}`}
                                 index={index}
                                 isDragDisabled={
-                                  (!isOwner && task.creater !== userId &&  task.users.some((user) => user.id !== userId) ) ||           
+                                  (!isOwner && task.creater !== userId ) ||           
                                   selectedUsers.length > 0 ||
                                   selectedPriorities.length > 0
                                 }>

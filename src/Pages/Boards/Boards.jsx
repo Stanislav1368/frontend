@@ -12,7 +12,7 @@ const Boards = () => {
   const queryClient = useQueryClient();
   const [openAddBoardModal, setOpenAddBoardModal] = useState(false);
   const [showOnlyFavorites, setShowOnlyFavorites] = useState(false);
-  const [showArchiveDrawer, setShowArchiveDrawer] = useState(false); // Состояние для отображения Drawer
+  const [showArchiveDrawer, setShowArchiveDrawer] = useState(false);
   const { data: user, isLoading: isUserLoading } = useQuery("user", fetchUser);
   const { data: boards, isLoading: isBoardsLoading } = useQuery("boards", () => fetchBoards(user.id), { enabled: !!user });
 
@@ -23,12 +23,18 @@ const Boards = () => {
   const handleToggleFavorite = async (boardId) => {
     const updatedBoards = boards.map((board) => {
       if (board.id === boardId) {
-        return { ...board, favorite: !board.favorite };
+        return {
+          ...board,
+          UserBoards: {
+            ...board.UserBoards,
+            favorite: !board.UserBoards.favorite,
+          },
+        };
       }
       return board;
     });
 
-    const updatedFavorite = !boards.find((board) => board.id === boardId).favorite;
+    const updatedFavorite = !boards.find((board) => board.id === boardId).UserBoards.favorite;
 
     await updateBoard(user.id, boardId, { favorite: updatedFavorite });
 
@@ -50,12 +56,10 @@ const Boards = () => {
     queryClient.setQueryData("boards", updatedBoards);
   };
 
-  // Фильтрация досок по isArchived
   const filteredBoards = showOnlyFavorites
-    ? boards?.filter((board) => board.favorite && !board.isArchived)
+    ? boards?.filter((board) => board.UserBoards.favorite && !board.isArchived)
     : boards?.filter((board) => !board.isArchived);
 
-  // Фильтрация заархивированных досок
   const archivedBoards = boards?.filter((board) => board.isArchived);
 
   const addBoard = async (values) => {
@@ -74,7 +78,7 @@ const Boards = () => {
         <div className="body-boards">
           <div style={{ display: "flex", gap: "15px", alignItems: "center" }}>
             <div className="switch-element">
-              <span>{showOnlyFavorites ? <Star style={{ color: "gold" }}></Star> : <Star style={{ color: "gray" }}></Star>}</span>
+              <span>{showOnlyFavorites ? <Star style={{ color: "gold" }} /> : <Star style={{ color: "gray" }} />}</span>
               <Switch checked={showOnlyFavorites} onChange={(checked) => setShowOnlyFavorites(checked)} />
             </div>
             <Button onClick={() => setShowArchiveDrawer(true)}>Архив</Button>
@@ -105,7 +109,7 @@ const Boards = () => {
                               e.stopPropagation();
                               handleToggleFavorite(board.id);
                             }}
-                            icon={<Star style={{ color: board.favorite ? "gold" : "grey" }} />}
+                            icon={<Star style={{ color: board.UserBoards.favorite ? "gold" : "grey" }} />}
                           />
                           <Button
                             type="text"
@@ -124,7 +128,7 @@ const Boards = () => {
                 <Col xs={24} sm={12} md={8} lg={6} style={{ margin: "8px 0px" }}>
                   <Card className="add-board" onClick={() => setOpenAddBoardModal(true)}>
                     <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
-                      <PlusCircleOutlined style={{ fontSize: "48px", color: "#D1D1D1" }}></PlusCircleOutlined>
+                      <PlusCircleOutlined style={{ fontSize: "48px", color: "#D1D1D1" }} />
                       Создать доску
                     </div>
                   </Card>
@@ -138,7 +142,7 @@ const Boards = () => {
         {archivedBoards?.map((board) => (
           <Card
             title={
-              <Flex style={{ alignItems: "center", justifyContent: "space-between" }}>
+              <div style={{ alignItems: "center", justifyContent: "space-between", display: "flex" }}>
                 {board.title}
                 <Button
                   type="text"
@@ -148,7 +152,7 @@ const Boards = () => {
                   }}
                   icon={<ArchiveOutlined color="primary" />}
                 />
-              </Flex>
+              </div>
             }
             bodyStyle={{ padding: "0px 15px", width: "100px" }}
             style={{ height: "110px", width: "100%" }}

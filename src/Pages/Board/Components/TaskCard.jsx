@@ -673,7 +673,7 @@ const SubTasksList = ({ subTasks, handleSubTaskCompletion, handleAddSubTask, cur
                   )
                 }
               />
-              <span>{subtask.title}</span>
+              <span style={{margin: "0px 0px 0px 5px"}}>{subtask.title}</span>
             </Flex>
           </List.Item>
         )}

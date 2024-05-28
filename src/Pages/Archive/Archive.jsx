@@ -70,7 +70,7 @@ const Archive = ({ boardId }) => {
                 {task?.startDate && <p>Начало: {moment(task?.startDate).locale("ru").format("DD.MM.YYYY")}</p>}
                 {task?.endDate && <p>Конец: {moment(task?.endDate).locale("ru").format("DD.MM.YYYY")}</p>}
               </div>
-              {(currentRole?.name === "Администратор" || currentRole?.name === "Редактор" || isOwner) && (
+              {(currentRole?.name === "Администратор" || (task.creater === userId && currentRole.name === "Редактор") || isOwner) && (
                 <Button
                   type="primary"
                   onClick={async () => {
